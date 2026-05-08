@@ -94,6 +94,50 @@ python scripts/generate_quest_log.py
 
 This produces `training/quest_log.md` — your live progress dashboard. The coach reads it at every boot.
 
+### 8. Set up your dashboard
+
+Your repo includes a web dashboard in `ui/` that deploys via Netlify. Takes about 10 minutes.
+
+**Step 1 — Create a GitHub Personal Access Token**
+
+The sync workflow needs permission to push back to your repo.
+
+1. Go to **GitHub → Settings → Developer Settings → Personal access tokens → Fine-grained tokens**
+2. Click **Generate new token**
+3. Set **Repository access** to your fork only
+4. Under **Repository permissions**, enable **Contents** → Read and write, and **Workflows** → Read and write
+5. Click **Generate token** and copy it — you won't see it again
+
+**Step 2 — Add the token to your repo**
+
+1. Go to your fork → **Settings → Secrets and variables → Actions**
+2. Click **New repository secret** — name: `PAT_TOKEN`, value: the token you just copied
+
+**Step 3 — Connect to Netlify**
+
+1. Go to [netlify.com](https://netlify.com), log in, click **Add new site → Import an existing project**
+2. Choose **GitHub** and select your fork
+3. Netlify auto-detects settings from `ui/netlify.toml` — confirm:
+   - **Base directory:** `ui`
+   - **Build command:** `npm install && npm run build`
+   - **Publish directory:** `dist`
+4. Click **Deploy site**
+
+**Step 4 — Add environment variables in Netlify**
+
+Go to **Site configuration → Environment variables** and add:
+
+| Key | Value |
+|---|---|
+| `GITHUB_REPO` | `your-github-username/your-repo-name` |
+| `GITHUB_WORKFLOW` | `sync.yml` |
+
+Then **Deploys → Trigger deploy → Deploy site** to pick them up.
+
+**Step 5 — Confirm**
+
+Open your Netlify URL. The dashboard loads (panels will be empty until you sync Strava data — that's expected). To pull in your history, hit **Sync** in the dashboard or run the workflow manually from GitHub Actions.
+
 ---
 
 ## How it works
