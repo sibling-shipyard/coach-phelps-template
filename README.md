@@ -131,6 +131,7 @@ Go to **Site configuration → Environment variables** and add:
 |---|---|
 | `GITHUB_REPO` | `your-github-username/your-repo-name` |
 | `GITHUB_WORKFLOW` | `sync.yml` |
+| `GITHUB_PAT` | the same Personal Access Token from Step 1 |
 
 Then **Deploys → Trigger deploy → Deploy site** to pick them up.
 
