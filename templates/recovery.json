@@ -6,13 +6,13 @@
   "estimated_duration_mins": 35,
   "location": "Home",
   "equipment": ["foam roller", "pilates band"],
-  "coaching_note": "This is training. Not optional, not a reward — a session. The left hip and right elbow need this as much as the strength work does. Slow down, breathe into tight spots.",
+  "coaching_note": "This is training. Not optional, not a reward - a session. Whatever areas feel tight or achy from your other sessions need this as much as the strength work does. Slow down, breathe into tight spots.",
   "phases": [
     {
       "name": "Foam Rolling",
       "duration": "15 min",
       "default_rest_secs": 10,
-      "coaching_note": "Roll slowly. When you find a tender spot, stop and hold 5-10 seconds. Don't just roll fast — that does nothing.",
+      "coaching_note": "Roll slowly. When you find a tender spot, stop and hold 5-10 seconds. Don't just roll fast - that does nothing.",
       "exercises": [
         {
           "num": 1,
@@ -34,7 +34,7 @@
           "both_sides": true,
           "rest_after_exercise_secs": 10,
           "form_cue": "Side-lying, roller on outer thigh. Stack top foot on floor for pressure control. Roll from hip to just above knee.",
-          "why": "IT band tightness contributes to knee pain on runs. Your right-side injury dominance makes the right IT band a priority."
+          "why": "IT band tightness contributes to knee pain on runs. Work both sides evenly, but spend extra time wherever you feel the most tension."
         },
         {
           "num": 3,
@@ -45,7 +45,7 @@
           "both_sides": true,
           "rest_after_exercise_secs": 10,
           "form_cue": "Sit on roller, cross ankle over opposite knee. Lean into the crossed-leg side. This targets the piriformis directly.",
-          "why": "Left glute and piriformis are likely contributing to the iliac crest pain. This is your most important spot today."
+          "why": "The glutes and piriformis tighten up fast from squatting, running, and single-leg work. This is often the most tender spot, so give it real time."
         },
         {
           "num": 4,
@@ -55,7 +55,7 @@
           "sets": 1,
           "rest_after_exercise_secs": 10,
           "form_cue": "Roller across upper back (T4-T8 range, not neck or lower back). Arms crossed over chest or hands behind head. Extend over the roller gently. Work segment by segment.",
-          "why": "Thoracic restriction forces lumbar compensation — directly linked to the overhead badminton back injury pattern. Open this up."
+          "why": "Thoracic restriction forces the lower back to compensate for movement it shouldn't be doing. Open this up, especially after desk time or overhead sport work."
         },
         {
           "num": 5,
@@ -74,7 +74,7 @@
       "name": "Stretching",
       "duration": "20 min",
       "default_rest_secs": 10,
-      "coaching_note": "Hold each stretch at least 45-60 seconds. Don't bounce. Breathe into the stretch — exhale to go deeper.",
+      "coaching_note": "Hold each stretch at least 45-60 seconds. Don't bounce. Breathe into the stretch - exhale to go deeper.",
       "exercises": [
         {
           "num": 6,
@@ -84,7 +84,7 @@
           "sets": 1,
           "both_sides": true,
           "rest_after_exercise_secs": 10,
-          "form_cue": "Back knee on floor, front foot flat. Drive hips forward gently. Keep torso upright — don't lean forward.",
+          "form_cue": "Back knee on floor, front foot flat. Drive hips forward gently. Keep torso upright - don't lean forward.",
           "why": "Tight hip flexors tilt the pelvis and compress the lower back. Critical for running posture."
         },
         {
@@ -96,7 +96,7 @@
           "both_sides": true,
           "rest_after_exercise_secs": 10,
           "form_cue": "Front shin across mat, back leg extended. Fold forward over the front leg. If hips don't reach the floor, put a folded towel under the hip.",
-          "why": "Directly targets the left glute and QL — the exact area around your iliac crest flag. Spend extra time on the left side."
+          "why": "Directly targets the glute and QL on each side. Spend extra time on whichever side feels tighter."
         },
         {
           "num": 8,
@@ -118,7 +118,7 @@
           "both_sides": true,
           "rest_after_exercise_secs": 10,
           "form_cue": "Lying on side, knees stacked at 90 degrees. Top arm sweeps across to the other side, following with the eye and head. Let the chest open. Hold 2 seconds at the end.",
-          "why": "Directly addresses the thoracic mobility restriction linked to the badminton overhead back injury pattern."
+          "why": "Directly addresses thoracic mobility restriction, which is common for anyone doing overhead sport or desk work and often ends up loading the lower back instead."
         },
         {
           "num": 10,
@@ -144,5 +144,5 @@
       ]
     }
   ],
-  "progression_notes": "If the left hip iliac crest is flaring, do an extra set of pigeon pose on the left and add 90-90 hip stretch. If post-badminton, prioritize thoracic rotation and the glute roll."
+  "progression_notes": "If a hip is flaring, do an extra set of pigeon pose on that side and add a 90-90 hip stretch. If this session follows an overhead sport or upper-body-heavy training, prioritize thoracic rotation and the glute roll."
 }

@@ -6,7 +6,7 @@
   "estimated_duration_mins": 58,
   "location": "Home",
   "equipment": ["parallettes", "dumbbells", "resistance band"],
-  "coaching_note": "Single-leg work is the priority here — almost every 2025 injury was right-side dominant. Pistol squat progression builds both strength and the imbalance correction simultaneously. L-sit on parallettes is the skill goal for this session. Copenhagen plank added to Core for adductor strength — start bent-knee given the right knee is still being monitored.",
+  "coaching_note": "Single-leg work is the priority here - unilateral training builds strength on each side independently, which is good practice for symmetry and balance no matter your training history. The pistol squat progression builds toward a strong single-leg squat pattern. L-sit on parallettes is the featured skill goal for this session. Copenhagen plank is added to Core for adductor strength - start bent-knee and progress to straight-leg once the movement feels solid and any joint stays quiet.",
   "phases": [
     {
       "name": "Warm-up",
@@ -21,7 +21,7 @@
           "sets": 2,
           "rest_between_sets_secs": 15,
           "form_cue": "Drive through heels, full hip extension at top, squeeze glutes for 1s. Don't let knees cave.",
-          "why": "Activates glutes before squatting — especially important for correcting right-side dominance"
+          "why": "Activates glutes before squatting - important for even loading on both sides"
         },
         {
           "num": 2,
@@ -30,7 +30,7 @@
           "reps": 12,
           "sets": 1,
           "both_sides": true,
-          "form_cue": "Hold a wall for balance. Controlled swing — let momentum increase gradually, not all at once.",
+          "form_cue": "Hold a wall for balance. Controlled swing - let momentum increase gradually, not all at once.",
           "why": "Hip flexor and hamstring mobility before single-leg work"
         },
         {
@@ -69,7 +69,7 @@
           "both_sides": true,
           "rest_between_sets_secs": 75,
           "form_cue": "Feet wide. Shift weight to one side, bending that knee while the other leg stays straight. Go as deep as mobility allows. Keep heel of working leg flat.",
-          "why": "Pistol squat prerequisite — builds single-leg strength without the full balance demand. Left side gets equal work to the right."
+          "why": "Pistol squat prerequisite - builds single-leg strength without the full balance demand. Both sides get equal work."
         },
         {
           "num": 6,
@@ -80,7 +80,7 @@
           "both_sides": true,
           "rest_between_sets_secs": 75,
           "form_cue": "Rear foot elevated on a chair. Front foot far enough that shin stays vertical at bottom. Lower slowly (2s). Drive through the front heel to stand.",
-          "why": "Unilateral quad and glute strength — forces each side to work independently, directly addresses the imbalance"
+          "why": "Unilateral quad and glute strength - forces each side to work independently, which builds symmetry and balance over time"
         }
       ]
     },
@@ -111,7 +111,7 @@
           "prep_secs": 5,
           "optional": true,
           "form_cue": "From tuck hold, extend one leg straight. Other leg stays tucked. Try to hold. This is the bridge to a full L-sit.",
-          "why": "Progression toward full L-sit — attempt when tuck hold is consistent at 10s"
+          "why": "Progression toward full L-sit - attempt when tuck hold is consistent at 10s"
         }
       ]
     },
@@ -129,7 +129,7 @@
           "rest_between_sets_secs": 45,
           "prep_secs": 5,
           "form_cue": "Lower back pressed flat. Arms overhead, legs straight and low. If back arches, bring legs higher.",
-          "why": "Hip flexor and core compression strength — directly supports L-sit and handstand"
+          "why": "Hip flexor and core compression strength - directly supports L-sit and handstand"
         },
         {
           "num": 10,
@@ -139,7 +139,7 @@
           "sets": 2,
           "rest_between_sets_secs": 30,
           "form_cue": "Lying flat. Bring knees to chest, then extend hips up off the floor. Lower slowly. Don't use momentum.",
-          "why": "Lower abs and hip flexor strength — the muscles that lift your legs in an L-sit"
+          "why": "Lower abs and hip flexor strength - the muscles that lift your legs in an L-sit"
         },
         {
           "num": 11,
@@ -150,13 +150,13 @@
           "both_sides": true,
           "rest_between_sets_secs": 45,
           "prep_secs": 5,
-          "form_cue": "Side plank position, top leg's shin resting on a bench/chair with the knee bent. Bottom leg hovers off the floor. Hips stay lifted and square — don't let them sag. Start bent-knee, not straight-leg.",
-          "why": "Adductor strength — directly supports the right-side imbalance correction work. Bent-knee variation first since the right knee is still being monitored; watch how it responds before progressing to straight-leg."
+          "form_cue": "Side plank position, top leg's shin resting on a bench/chair with the knee bent. Bottom leg hovers off the floor. Hips stay lifted and square - don't let them sag. Start bent-knee, not straight-leg.",
+          "why": "Adductor strength that's often neglected in lower-body programming. Start bent-knee to build the pattern and control, then progress to straight-leg once it feels solid on both sides."
         }
       ]
     },
     {
-      "name": "Elbow Rehab",
+      "name": "Wrist & Forearm Conditioning",
       "duration": "6 min",
       "default_rest_secs": 30,
       "exercises": [
@@ -167,8 +167,8 @@
           "reps": 10,
           "sets": 2,
           "rest_between_sets_secs": 30,
-          "form_cue": "Use other hand to curl up, then slowly lower with the affected arm over 3-4 seconds. Light weight only.",
-          "why": "Evidence-based fix for golfer's elbow — every session, no exceptions"
+          "form_cue": "Use other hand to curl up, then slowly lower with the working arm over 3-4 seconds. Light weight only.",
+          "why": "Builds tendon resilience in the wrist flexors - useful maintenance for anyone loading their wrists in parallette work"
         },
         {
           "num": 13,
@@ -178,7 +178,7 @@
           "sets": 2,
           "rest_between_sets_secs": 30,
           "form_cue": "Palm down. Curl the wrist up, lower slowly. Light weight.",
-          "why": "Balances the flexor-dominant rehab with extensor work"
+          "why": "Balances the flexor work with extensor strength"
         },
         {
           "num": 14,
@@ -189,7 +189,7 @@
           "both_sides": true,
           "rest_between_sets_secs": 15,
           "form_cue": "Arm straight, palm up, gently pull fingers back. Hold, don't bounce.",
-          "why": "Lengthens the flexor tendons — completes the rehab trio"
+          "why": "Lengthens the flexor tendons - completes the wrist conditioning work"
         }
       ]
     },
@@ -217,10 +217,10 @@
           "sets": 1,
           "both_sides": true,
           "form_cue": "Front shin parallel to the mat if possible. Fold forward to deepen. Breathe and stay.",
-          "why": "Deep glute and hip opener — reduces right-side tightness that contributes to the imbalance pattern"
+          "why": "Deep glute and hip opener - helps offset the tightness that builds up from single-leg training"
         }
       ]
     }
   ],
-  "progression_notes": "Archer squats: increase depth each week. Pistol squat is the next milestone — add it when archers feel easy. L-sit: add 2s to tuck holds each week, attempt one-leg extension when 10s is consistent. Bulgarian split squats: add 2kg dumbbells when 3x8 bodyweight feels below RPE 6. Copenhagen plank: move to straight-leg once bent-knee at 3x20s/side feels solid and the knee has stayed quiet for a couple of sessions."
+  "progression_notes": "Archer squats: increase depth each week. Pistol squat is the next milestone - add it when archers feel easy. L-sit: add 2s to tuck holds each week, attempt one-leg extension when 10s is consistent. Bulgarian split squats: add 2kg dumbbells when 3x8 bodyweight feels below RPE 6. Copenhagen plank: move to straight-leg once bent-knee at 3x20s/side feels solid and the knee has stayed quiet for a couple of sessions."
 }

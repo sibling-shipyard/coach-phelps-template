@@ -11,7 +11,7 @@
     "ankle weights",
     "foam roller"
   ],
-  "coaching_note": "Hip hinge on RDLs \u2014 push hips back, not down. If lower back flares on RDLs, swap to bird dogs. Shoulder & Elbow phase is optional if you're cooked \u2014 but do the elbow work if at all possible.",
+  "coaching_note": "Hip hinge on RDLs - push hips back, not down. If your lower back flares up on RDLs, swap to bird dogs for the day. Shoulder & Wrist phase is optional if you're short on time or energy, but it's worth keeping in when you can - that maintenance work pays off over the long run.",
   "phases": [
     {
       "name": "Warm-up",
@@ -68,7 +68,7 @@
           "rest_between_sets_secs": 75,
           "rest_after_exercise_secs": 90,
           "form_cue": "Hold one DB at chest. Chest tall, knees track toes, sit into heels. Don't let lower back round at the bottom.",
-          "why": "Builds quad and glute strength. Goblet position keeps torso upright \u2014 easier on lower back than back squat."
+          "why": "Builds quad and glute strength. Goblet position keeps torso upright - easier on lower back than back squat."
         },
         {
           "num": 5,
@@ -78,7 +78,7 @@
           "sets": 3,
           "rest_between_sets_secs": 75,
           "rest_after_exercise_secs": 90,
-          "form_cue": "Push hips back, not down. Soft knee bend. DBs stay close to legs. Feel the hamstring stretch. Stop when lower back starts to round \u2014 that's your end range.",
+          "form_cue": "Push hips back, not down. Soft knee bend. DBs stay close to legs. Feel the hamstring stretch. Stop when lower back starts to round - that's your end range.",
           "why": "Hamstring and posterior chain strength. Critical for running economy and knee health."
         },
         {
@@ -91,7 +91,7 @@
           "rest_after_exercise_secs": 90,
           "both_sides": true,
           "form_cue": "Back foot on dip bar or chair. Front foot far enough forward so knee doesn't cave over toes. Torso upright. Add DBs when bodyweight feels easy.",
-          "why": "Single-leg strength to address right-side dominance and imbalance. Protects knees on long runs."
+          "why": "Single-leg strength builds symmetry between both sides and protects knees on long runs."
         },
         {
           "num": 7,
@@ -101,7 +101,7 @@
           "sets": 3,
           "rest_between_sets_secs": 45,
           "rest_after_exercise_secs": 60,
-          "form_cue": "Lying on back. Lower back stays flat on floor throughout. Slow and controlled \u2014 no swinging.",
+          "form_cue": "Lying on back. Lower back stays flat on floor throughout. Slow and controlled - no swinging.",
           "why": "Hip flexor and lower abs strength. Helps running posture and protects the lower back."
         }
       ]
@@ -144,7 +144,7 @@
           "sets": 3,
           "rest_between_sets_secs": 45,
           "rest_after_exercise_secs": 60,
-          "form_cue": "Forearms down. Body straight line \u2014 no sagging hips, no raised butt. Breathe.",
+          "form_cue": "Forearms down. Body straight line - no sagging hips, no raised butt. Breathe.",
           "why": "Full anterior core endurance. Foundation for everything else."
         },
         {
@@ -157,16 +157,16 @@
           "rest_after_exercise_secs": 45,
           "both_sides": true,
           "form_cue": "Hip stacked, don't let it sag. Modified on knee if needed.",
-          "why": "Lateral core strength \u2014 directly targets the left QL and iliac crest area."
+          "why": "Lateral core strength - targets the QL and obliques on each side, an area regular training often neglects."
         }
       ]
     },
     {
-      "name": "Shoulder & Elbow",
+      "name": "Shoulder & Wrist",
       "duration": "15 min",
       "default_rest_secs": 45,
       "optional": true,
-      "coaching_note": "Skip the shoulder work if you're cooked. But do the elbow exercises even when tired \u2014 that eccentric loading is the healing mechanism.",
+      "coaching_note": "Skip this block if you're short on time or energy. But if you keep just one piece, make it the eccentric wrist curls - that slow-lowering pattern is what builds tendon resilience.",
       "exercises": [
         {
           "num": 12,
@@ -177,8 +177,8 @@
           "rest_between_sets_secs": 30,
           "rest_after_exercise_secs": 45,
           "both_sides": true,
-          "form_cue": "Anchor band at waist height. Elbow bent 90 degrees, pinned to side. Rotate forearm outward only \u2014 elbow doesn't move. Slow and controlled.",
-          "why": "Rotator cuff strengthening \u2014 builds the stabilizers that protect the shoulder during badminton overheads."
+          "form_cue": "Anchor band at waist height. Elbow bent 90 degrees, pinned to side. Rotate forearm outward only - elbow doesn't move. Slow and controlled.",
+          "why": "Rotator cuff strengthening - builds the stabilizers that protect the shoulder during any overhead movement, whether that's a sport, a lift, or daily life."
         },
         {
           "num": 13,
@@ -189,7 +189,7 @@
           "rest_between_sets_secs": 30,
           "rest_after_exercise_secs": 45,
           "form_cue": "Slight forward lean. Arms form a Y at 45 degrees, thumbs up. Raise to shoulder height only. Use 2-3kg max.",
-          "why": "Targets lower trapezius and posterior deltoid \u2014 prevents shoulder impingement on overhead movements."
+          "why": "Targets lower trapezius and posterior deltoid - prevents shoulder impingement on overhead movements."
         },
         {
           "num": 14,
@@ -201,7 +201,7 @@
           "rest_after_exercise_secs": 30,
           "both_sides": true,
           "form_cue": "Arm straight, palm up. Gently pull fingers back with other hand. Feel the stretch on the inside of the forearm. Don't force it.",
-          "why": "Lengthens the wrist flexors and medial forearm tendons \u2014 addresses the golfer's elbow tension site."
+          "why": "Lengthens the wrist flexors and medial forearm tendons - keeps the forearm mobile and reduces the tension that builds up around the inner elbow from gripping and pressing work."
         },
         {
           "num": 15,
@@ -212,8 +212,8 @@
           "rest_between_sets_secs": 45,
           "rest_after_exercise_secs": 60,
           "both_sides": true,
-          "form_cue": "Forearm on thigh, palm up, 2-3kg DB. Use other hand to lift the weight up. Lower slowly with working arm only \u2014 3 counts down. That slow lowering is the whole point.",
-          "why": "Eccentric loading is the gold-standard treatment for golfer's elbow. The slow lowering phase remodels the tendon."
+          "form_cue": "Forearm on thigh, palm up, 2-3kg DB. Use other hand to lift the weight up. Lower slowly with working arm only - 3 counts down. That slow lowering is the whole point.",
+          "why": "Eccentric loading is one of the best tools for building tendon resilience in the wrist flexors. The slow lowering phase is what does the work - don't rush it."
         },
         {
           "num": 16,
@@ -225,7 +225,7 @@
           "rest_after_exercise_secs": 0,
           "both_sides": true,
           "form_cue": "Forearm on thigh, palm down, 2-3kg DB. Curl knuckles up toward you, lower slowly. Don't let the forearm lift off the thigh.",
-          "why": "Strengthens the wrist extensors \u2014 the antagonist to the injured flexor group. Balanced forearm strength reduces tendon stress."
+          "why": "Strengthens the wrist extensors to balance the flexor-focused work above. Balanced forearm strength reduces overall tendon stress."
         }
       ]
     }

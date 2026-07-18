@@ -1,12 +1,12 @@
 {
   "id": "foundation",
   "title": "Foundation",
-  "subtitle": "Morning activation — done before 8am",
+  "subtitle": "Morning activation - done before 8am",
   "workout_type": "foundation",
   "estimated_duration_mins": 20,
   "location": "Home",
   "equipment": ["skipping rope", "pilates band"],
-  "coaching_note": "This is the habit. Not a workout — a ritual. 20 minutes, every morning, before the day gets in the way. On rest days, on travel days, on tired days. The bar is low by design.",
+  "coaching_note": "This is the habit. Not a workout - a ritual. 20 minutes, every morning, before the day gets in the way. On rest days, on travel days, on tired days. The bar is low by design.",
   "phases": [
     {
       "name": "Wake-Up",
@@ -53,7 +53,7 @@
           "rest_after_exercise_secs": 30,
           "both_sides": true,
           "form_cue": "Lying on side, band just above knees, hips stacked. Rotate top knee up like a clamshell. Don't let the hip roll back.",
-          "why": "Gluteus medius activation — directly targets the muscle group around the left iliac crest injury. Also protects knees on runs."
+          "why": "Gluteus medius activation - this small muscle group stabilizes the hip and is easy to neglect. Also protects knees on runs."
         },
         {
           "num": 4,
@@ -92,5 +92,5 @@
       ]
     }
   ],
-  "progression_notes": "On days when you have a strength or run session later, keep this light — it's activation, not fatigue. On rest days, you can extend the stretching section instead of doing the skip rope."
+  "progression_notes": "On days when you have a strength or run session later, keep this light - it's activation, not fatigue. On rest days, you can extend the stretching section instead of doing the skip rope."
 }
