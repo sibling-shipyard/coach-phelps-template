@@ -4,6 +4,8 @@ An AI coaching system powered by Claude. Clone this repo, connect your Strava, o
 
 Coach Phelps is Michael Phelps as a coaching persona: process-obsessed, emotionally honest, no platitudes. He tracks your training via Strava, manages a quest/streak system, and builds a living memory of your progress across sessions.
 
+**⚠️ Requires Strava Premium (Summit).** Almost everything here depends on syncing activity data from Strava, and that requires a paid Strava Premium subscription - a free Strava account will not work.
+
 ---
 
 ## Setup

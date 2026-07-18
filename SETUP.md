@@ -10,6 +10,8 @@ By the end you'll have:
 
 Budget about 30-45 minutes for the whole thing, most of it waiting on you to click through account sign-ups.
 
+**⚠️ You need Strava Premium (Summit).** Most of this repo depends on syncing your activity data from Strava, and that requires a paid Strava Premium subscription - a free Strava account is not enough. Confirm your subscription before starting section 3 below, since almost everything downstream (sync, the dashboard, the coach's context on your training) depends on it working.
+
 ---
 
 ## 1. Create your GitHub repo
@@ -62,9 +64,11 @@ This repo uses a GitHub Actions workflow to sync your Strava data automatically.
 
 ## 3. Connect Strava
 
+**⚠️ Requires Strava Premium (Summit).** A free Strava account is not enough to pull activity data through this repo's sync - you need an active Strava Premium subscription. If you don't have one, sign up (or start a trial) at [strava.com/premium](https://www.strava.com/premium) before continuing.
+
 ### Create a Strava API application
 
-1. Log into [strava.com](https://www.strava.com) (create a free account if you don't have one).
+1. Log into [strava.com](https://www.strava.com) with your Premium account.
 2. Go to [strava.com/settings/api](https://www.strava.com/settings/api).
 3. Fill in the app creation form:
    - **Application Name:** anything, e.g. "My Coach Phelps"
