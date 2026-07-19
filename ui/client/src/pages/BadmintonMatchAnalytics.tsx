@@ -13,7 +13,7 @@ import activitiesData from "@/data/activities.json";
 import challengeDataRaw from "@/data/challenge_v2.json";
 import syncStatusData from "@/data/sync_status.json";
 import type { ChallengeV2 } from "@/lib/challenge";
-import { Activity, getTrainingCategory, computeFoundationStreak } from "@/lib/activities";
+import { Activity, getTrainingCategory, computeSleepStreak } from "@/lib/activities";
 import { parseMatch, getAllGames, getRankedGames, type ParsedMatch, type ParsedGame } from "@/lib/matchParser";
 import { CommandStrip } from "@/components/CommandStrip";
 import { GameFilter, type GameMode } from "@/components/badminton-match-analytics/GameFilter";
@@ -137,12 +137,10 @@ export default function BadmintonMatchAnalytics() {
     [sessions, mode],
   );
 
-  // Foundation streak for CommandStrip
-  const foundationQuest = challengeData.quests.find((q) => q.id === "foundation");
-  const foundationExcused = foundationQuest?.excused_dates ?? [];
-  const foundationStreak = useMemo(
-    () => computeFoundationStreak(activities as Activity[], foundationExcused),
-    [foundationExcused],
+  const sleepQuest = challengeData.quests.find((q) => q.id === "sleep");
+  const sleepStreak = useMemo(
+    () => computeSleepStreak(sleepQuest?.completed_dates ?? []),
+    [sleepQuest],
   );
 
   // Cross-widget linking handlers
@@ -173,11 +171,7 @@ export default function BadmintonMatchAnalytics() {
 
   return (
     <div className="min-h-screen bg-background">
-      <CommandStrip
-        challengeData={challengeData}
-        foundationStreak={foundationStreak}
-        syncStatus={syncStatusData}
-      />
+      <CommandStrip challengeData={challengeData} sleepStreak={sleepStreak} syncStatus={syncStatusData} showBack />
       <div className="border-b-2 border-foreground" />
 
       <div className="container py-6 px-4 md:px-6">
