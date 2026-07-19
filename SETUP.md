@@ -12,6 +12,8 @@ Budget about 30-45 minutes for the whole thing, most of it waiting on you to cli
 
 **⚠️ You need Strava Premium (Summit).** Most of this repo depends on syncing your activity data from Strava, and that requires a paid Strava Premium subscription - a free Strava account is not enough. Confirm your subscription before starting section 3 below, since almost everything downstream (sync, the dashboard, the coach's context on your training) depends on it working.
 
+**⚠️ You need a Claude Pro (or Max/Team/Enterprise) subscription to talk to your coach.** Coach Phelps runs as a Claude Code session (or a Claude.ai conversation) - actually talking to it, not just setting up the repo, requires an active paid Claude plan. Claude's free tier doesn't include enough usage for a real coaching conversation. See [claude.ai/upgrade](https://claude.ai/upgrade) if you don't already have one.
+
 ---
 
 ## 1. Create your GitHub repo
@@ -98,10 +100,9 @@ Open the new `.env` file in any text editor and fill in the two values from the 
 STRAVA_CLIENT_ID=your_client_id_here
 STRAVA_CLIENT_SECRET=your_client_secret_here
 STRAVA_REFRESH_TOKEN=
-STRAVA_ACCESS_TOKEN=
 ```
 
-Leave `STRAVA_REFRESH_TOKEN` and `STRAVA_ACCESS_TOKEN` blank - the next step fills those in automatically. This `.env` file is git-ignored, so it stays on your machine only and never gets committed.
+Leave `STRAVA_REFRESH_TOKEN` blank - the next step fills in your tokens automatically, in a separate `strava/strava_tokens.json` file rather than here. This `.env` file is git-ignored, so it stays on your machine only and never gets committed.
 
 ### Authorize your app
 
@@ -193,10 +194,12 @@ Open the URL Vercel gives you (something like `your-project.vercel.app`). The da
 ```bash
 claude
 ```
-Run this from inside your cloned repo folder.
+Run this from inside your cloned repo folder. Requires a Claude Pro (or Max/Team/Enterprise) subscription - see the note at the top of this guide.
 
 **Claude.ai:**
 Upload `SOUL.md` and `training/state.md` as attachments to a new conversation.
+
+**On your phone:** see section 9 below to set up chatting with your coach from the Claude mobile app.
 
 Coach Phelps detects the blank `training/state.md` and automatically runs an intake conversation - no special prompting needed. During this first session the coach will:
 - Review your Strava history silently before saying hello (if you synced it)
@@ -237,6 +240,23 @@ The workflow already has all the secrets it needs from steps 2 and 3 above (`PAT
 
 ---
 
+## 9. Chat with your coach from your phone (optional)
+
+Claude's mobile app can run Claude Code sessions connected directly to a GitHub repo, so you can talk to Coach Phelps from your phone without opening a laptop. Requires the Claude Pro (or Max/Team/Enterprise) subscription mentioned at the top of this guide.
+
+1. Install the **Claude** app ([iOS](https://apps.apple.com/app/claude/id6473753684) / [Android](https://play.google.com/store/apps/details?id=com.anthropic.claude)) and log in with the same account as your Claude Pro subscription.
+2. In the app, open **Settings → Connectors** (sometimes shown as **Connected apps** or under the **Claude Code** section, depending on your app version) and choose **GitHub**.
+3. Authorize the Claude GitHub App, then grant it access to your Coach Phelps repo specifically (or all repos, if you prefer) - GitHub will prompt you through this as an OAuth/App installation flow.
+4. Back in the Claude app, start a new chat and switch it to **Claude Code** mode, then select your Coach Phelps repo from the connected repo list. This opens a session with the same repo context (`SOUL.md`, `training/`, etc.) as running `claude` locally.
+5. Talk to your coach exactly like you would from the CLI - "hi coach", check in about training, close out your session, etc.
+
+**If a phone session can't push commits directly** (mobile/remote sessions sometimes run in a more sandboxed environment than your local CLI), use the `apply-coach-patch.yml` workflow as a fallback:
+1. At the end of the session, ask the coach for the `===FILE===`-delimited patch payload instead of asking it to push.
+2. On GitHub, go to your repo → **Actions → Apply Coach Patch → Run workflow**.
+3. Paste the payload into the `payload` input, adjust the commit message if you want, and click **Run workflow**. This commits and pushes the change on your behalf using the `PAT_TOKEN` secret from step 2.
+
+---
+
 ## Troubleshooting
 
 - **`oauth_reauth.py` doesn't open a browser / hangs:** Make sure port used by the local callback isn't blocked by a firewall. Try running it again.
@@ -252,8 +272,7 @@ The workflow already has all the secrets it needs from steps 2 and 3 above (`PAT
 |---|---|---|
 | `STRAVA_CLIENT_ID` | local `.env` + repo secret | Strava API authentication |
 | `STRAVA_CLIENT_SECRET` | local `.env` + repo secret | Strava API authentication |
-| `STRAVA_REFRESH_TOKEN` | local `.env` (auto-filled) + repo secret | Refreshing Strava access without re-authorizing |
-| `STRAVA_ACCESS_TOKEN` | local `.env` (auto-filled) | Short-lived Strava API access token |
+| `STRAVA_REFRESH_TOKEN` | `strava/strava_tokens.json` (auto-filled) + repo secret | Refreshing Strava access without re-authorizing |
 | `PAT_TOKEN` | repo secret | Lets GitHub Actions push commits back to your repo |
 | `GITHUB_REPO` | Vercel environment variable | Tells the dashboard which repo to trigger syncs on |
 | `GITHUB_WORKFLOW` | Vercel environment variable | Which workflow file to trigger (`sync.yml`) |
