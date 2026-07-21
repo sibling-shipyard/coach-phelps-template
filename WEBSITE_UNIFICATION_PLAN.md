@@ -7,6 +7,11 @@ fork history plus everything only relevant past two users; this doc is the real,
 for unifying Skanda and Akash onto one shared site now.
 **Per-repo execution:** what changes in each person's own repo lives in `MIGRATION_SKANDA.md`
 and `MIGRATION_AKASH.md` (repo root) — this doc covers the shared-site side of the work only.
+**Detailed design cross-reference:** Akash independently designed the same auth/data/onboarding
+work in `akash-suresh/coach-phelps#141` and sub-issues #137-140, written before he'd agreed
+`coach-phelps-template` (not his own repo) would host the shared site. Sections 5-7 below are
+reconciled with that design — where his was more thought-through (PKCE, repo-resolution
+branching, the aggregate data model), it won and is reflected here.
 
 ---
 
@@ -63,62 +68,102 @@ the `template_owner/template_repo` reference used in Section 6's provisioning st
 | Real tradeoff | We own CSRF-state validation, cookie signing, and token handling correctness ourselves. Low stakes at 2 users; at 100 real GitHub accounts, a mistake here has real blast radius, and there's no vendor security team behind it. | Offloads that correctness to an audited, widely-used flow. Adds a third-party account/service dependency, which cuts against this project's "your data, your repo, no central dependency" philosophy — worth it mainly if Section 6 also needs Supabase for storage. |
 | Decision | **Chosen.** Zero new service dependency, fits the project's existing ethos, and the team is willing to spend the extra implementation time to get it right. If confidence in the self-rolled implementation is ever in doubt, swapping to Supabase Auth later is a contained change (same GitHub OAuth App, same session concept — isolated to `ui/api/auth-*.ts` and the session-lookup call sites). | Fallback option if the raw flow proves too costly to maintain correctly, or if Section 6 lands on Supabase for storage anyway. |
 
-**OAuth App ownership — decided:** registered under a new shared GitHub org (name TBD at
-registration time — not blocking), with both Skanda and Akash as org owners. This replaces the
-"one person's account + the other as admin" option from `UNIFICATION_PLAN.md`'s open questions,
-and unblocks Milestone 2 (Section 4 is resolved, so there's no longer a dependency to wait on).
+**OAuth App ownership — decided and confirmed with Akash:** registered under a new shared GitHub
+org, with both Skanda and Akash as org owners.
+
+**OAuth scope — decided: `repo` only, no `workflow` scope in this pass.** Matches Akash's
+design (issue #137): read-only against the Contents/repo API is enough for sign-in, repo
+resolution, and data fetch. Writing to Actions workflows under a user's own token (needed to
+drop the shared bot token entirely) is explicitly deferred — see Section 8.7 below.
 
 Concrete flow:
-1. Register a GitHub OAuth App under the shared org. Scopes: `read:user`, `repo`.
-2. `ui/api/auth-login.ts` — redirects to GitHub's authorize URL with a CSRF `state` nonce.
-3. `ui/api/auth-callback.ts` — validates `state`, exchanges `code` for a token, fetches `GET /user`,
-   sets an HttpOnly/Secure/SameSite=Lax session cookie: a signed JWT (`SESSION_SECRET` env var)
-   containing `{github_user_id, login, iat, exp}`. The raw GitHub token lives only inside this
-   short-lived (~8h) encrypted JWT — never persisted to storage, never sent to the client in
-   readable form.
+1. Register a GitHub OAuth App under the shared org. Scope: `repo` (covers both private-repo
+   read and identifying the user; no separate `read:user` needed for a classic OAuth App).
+2. `ui/api/auth-login.ts` — redirects to GitHub's authorize URL with a CSRF `state` nonce **and
+   PKCE** (code challenge/verifier) — hardening adopted from Akash's design, not just `state`
+   alone.
+3. `ui/api/auth-callback.ts` — validates `state` and the PKCE verifier, exchanges `code` for a
+   token, fetches `GET /user`, sets an HttpOnly/Secure/SameSite=Lax session cookie: a signed JWT
+   (`SESSION_SECRET` env var) containing `{github_user_id, login, repo_full_name, iat, exp}`. The
+   raw GitHub token lives only inside this short-lived (~8h) encrypted JWT — never persisted to
+   storage, never sent to the client in readable form. `repo_full_name` is populated once
+   Section 6's resolution flow runs, and re-populated on next login if resolution changes
+   (see Section 6 — this replaces the earlier Vercel KV plan with no persistent store at all).
 4. `ui/api/auth-me.ts` — reads the session cookie, returns `{github_user_id, login, repo_full_name}`
    or 401. SPA calls this on load to decide: login screen / onboarding / dashboard.
 5. `ui/api/auth-logout.ts` — clears the cookie.
 
-## 6. Provisioning flow
+**Deferred to a follow-up issue, not blocking:** instant session revocation and a "list all
+users" admin view both require some persistent store (Vercel KV or similar) — genuinely useful
+past two trusted users, not needed now. Tracked as a separate issue, tackled after Milestones
+1-4 land, not before.
 
-On first login with no stored repo mapping:
-1. Redirect to `/onboarding`: "Do you have an existing Coach Phelps repo, or are you starting fresh?"
-2. **Existing repo** → `list-my-repos.ts` lists the user's repos (via their token), filtered to ones
-   containing `SOUL.md` + `training/challenge_v2.json` (cheap Contents-API heuristic). User picks
-   one, mapping gets stored.
-3. **New user** → text field for repo name → `provision-repo.ts` calls GitHub's repo-generate-from-
-   template endpoint (`POST /repos/{template_owner}/{template_repo}/generate`, the API behind "Use
-   this template") with `{owner: <user's login>, name, private: true}`. Requires the template repo
-   to have `is_template: true` set — verify or set this on whichever repo Section 4 lands on.
-4. Data population (Strava OAuth, first sync) still follows existing `SETUP.md` — this plan wires up
-   *reading* the repo, not automating the rest of onboarding.
+## 6. Provisioning / repo resolution flow
 
-**Storage — decided: Vercel KV.**
+**Storage — decided: no persistent store.** Reconciled with Akash's design (issue #139), which
+uses no server DB at all — resolved repo persisted client-side. This plan's version: store
+`repo_full_name` inside the same signed session JWT from Section 5, rather than raw
+`localStorage` — server-verified, no separate storage layer, slightly more tamper-resistant than
+plain `localStorage` for free. Functionally the same conclusion Akash reached independently: a
+Vercel KV lookup table isn't needed at two users. (Answers the "why is KV required?" question —
+it isn't. See the deferred-issue note in Section 5 for what a future KV table would actually buy:
+instant session revocation and an admin user list, neither urgent now.)
 
-| | Vercel KV (chosen) | Supabase table (alternative) |
-|---|---|---|
-| What it stores | Single key per user: `github_user_id → {login, repo_full_name}`. No secrets — the GitHub token lives only in the session JWT (Section 5), never persisted here. | Same schema, in Postgres. |
-| Scaling | Trivial at any realistic scale for this project (kilobytes of data, low request volume even at hundreds of users) — this was never going to be the bottleneck. | Same. |
-| Tradeoff | Fastest to wire up given we're already on Vercel; no relational queries, fine since it's a pure lookup. | Queryable (user counts, signup dates), free admin dashboard — but only worth the extra setup if Section 5 also picks Supabase Auth. |
-| Decision | **Chosen**, paired with the raw-OAuth choice above — one less service dependency. Revisit if Supabase Auth is ever adopted instead (switch both together, not just one). | Fallback, contingent on Section 5's decision changing. |
+On first login with no `repo_full_name` in the session:
+1. **List candidates** — `GET /user/repos` via the user's token (covers private repos under
+   `repo` scope), filtered to names containing `coach-phelps`.
+2. **Confirm each is real** — cheap marker check per candidate: does it contain
+   `training/challenge_v2.json` (Contents API GET)? Guards against an unrelated repo that happens
+   to match the name pattern.
+3. **Branch on confirmed count:**
+   - **0** → "no coach repo found" empty state, with a placeholder for the future "Create my
+     coach" template-generate flow (see below — deferred, not built now).
+   - **1** → select it automatically.
+   - **2+** → a picker UI; user chooses.
+4. **Persist the choice** — write the selected `repo_full_name` into the session JWT (re-issued
+   with the updated claim). On subsequent requests within the session, skip re-resolution
+   entirely. The stored `full_name` is the durable identity (survives the user later renaming
+   their repo) — the name-pattern search is only the first-run heuristic.
+5. **Re-resolve on failure** — if the stored repo 404s (deleted, renamed, access revoked), clear
+   the claim and re-run resolution from step 1.
 
-## 7. Live data fetching (replaces build-time bundling)
+**New-user template-generate path (`provision-repo.ts`, calling GitHub's
+`POST /repos/{template_owner}/{template_repo}/generate` with `is_template: true` set on
+`coach-phelps-template`) is explicitly deferred** — Skanda and Akash both onboard via the
+existing-repo path above, so this isn't needed to unblock Milestones 1-4. Tracked in
+`SCALING_PLAN.md` for friend #3+ (also where the "new repo inherits an unused `ui/` folder" gap
+gets solved before this path is actually built).
+
+## 7. Live data fetching — Repo-as-CDN aggregate (replaces build-time bundling)
 
 `build-data.mjs` reads the filesystem at build time — incompatible with one deployment serving N
 repos, and with data changing independently of redeploys (syncs run via `sync.yml`).
 
-- New Edge function `ui/api/repo-file.ts`: session cookie → `repo_full_name` lookup (KV) → GitHub
-  Contents API calls for `training/history/*`, `challenge_v2.json`, `templates/*.json` +
-  `sessions/*.json`, `sleep_log.json`, `sync_status.json`.
-- Extract `build-data.mjs`'s merge logic (history merge/sort, templates+sessions merge with 7-day
-  pruning, sync_status fallback) into a shared `ui/api/_lib/mergeTrainingData.ts`, reused by both the
-  build-time script (kept for local single-repo dev) and the new runtime function.
-- Client: replace static `import x from "../data/y.json"` with a `useRepoData(path)` fetch hook,
-  mirroring the old synchronous shape so component churn stays minimal.
-- Cache Contents API responses (a few minutes TTL — data changes at most once/day).
+**Reconciled with Akash's design (issues #138/#140) — adopted over the original plan of live
+per-file fetching.** Instead of the shared site fetching several raw files at request time and
+merging them itself, each personal repo's own sync pipeline publishes one pre-merged file:
+
+- `sync.yml` (in `coach-phelps` and `akash-coach-phelps`, each — see `MIGRATION_SKANDA.md` /
+  `MIGRATION_AKASH.md`) gains a step that reuses `build-data.mjs`'s existing merge logic (history
+  merge/sort, templates+sessions merge with 7-day pruning, sync_status fallback) — refactored so
+  the merge produces an in-memory object writable either to `ui/client/src/data/*.json` (existing
+  build-time behavior, kept for local single-repo dev) or to a new committed artifact,
+  **`data/aggregate.json`**, at the repo root. Idempotent commit, mirroring
+  `apply-coach-patch.yml`'s no-op-when-unchanged guard.
+- `data/aggregate.json` shape: `activities`, `challenge_v2`, `current_week`, `workouts`,
+  `sync_status`, plus a top-level **`schema_version`** and `generated_at`.
+- New Edge function `ui/api/repo-file.ts`: session (`repo_full_name` from the JWT, Section 6) →
+  **one** GitHub Contents API call for `data/aggregate.json` — not several raw files.
+- Client: replace static `import x from "../data/y.json"` with a `useRepoData()` fetch hook that
+  loads the aggregate, adapting its shape to what components already consume — a thin adapter,
+  not a component rewrite.
+- **Schema gate:** if the fetched aggregate's `schema_version` is outside the supported range,
+  show a "repo needs updating" state instead of rendering garbage. **Akash owns the supported
+  version-range policy** (per his issue #140).
+- Loading/error/empty states wherever the app previously assumed data was just present.
+- Cache the Contents API response (a few minutes TTL — data changes at most once/day, on sync).
 - Local unauthenticated `npm run dev` path stays untouched — multi-tenant fetching only applies to
-  the hosted deployment.
+  the hosted deployment; `build-data.mjs`'s original output path is unaffected.
 
 ## 8. Codebase merge sequencing
 
@@ -129,10 +174,17 @@ repos, and with data changing independently of redeploys (syncs run via `sync.ym
 3. Drop dead/superseded code: `Map.tsx`, un-genericized `components/analytics/`, `ManusDialog.tsx`.
 4. Merge Akash-only `components/ui/` shadcn primitives — additive.
 5. Confirm `/badminton-match-analytics` nav linkage (port the nav *link* if Akash's points elsewhere;
-   the route itself already exists).
+   the route itself already exists). Both existing page implementations merge as-is — no visual/UX
+   reconciliation now, confirmed with Akash ("leave both pages however it is, tackle later");
+   tracked as a separate low-priority issue, not blocking.
 6. Keep template's `build-data.mjs` (superset).
 7. `trigger-sync.ts` gets rewritten as part of Sections 5-7's work — resolve target repo from
-   session, not a static env var. Akash's Netlify version is superseded, not ported.
+   session, not a static env var, but **keep using the existing shared bot token** to dispatch
+   the workflow (not the logged-in user's own OAuth token). Reconciled with Akash's design: his
+   OAuth App only requests `repo` scope, not `workflow` scope, and he explicitly defers "writes
+   under user token, drop the shared PAT" to later. This plan matches that — no new OAuth scope
+   needed, deployment retirement (step 8) doesn't have to wait on that deferred write-token
+   migration. Akash's Netlify version is superseded, not ported.
 8. Decommission **both** standalone deployments once the shared site is confirmed working
    end-to-end for both accounts: Akash's Netlify site, and Skanda's separate `coach-phelps`
    Vercel deployment. Neither of you needs your own deployment once the one shared deployment

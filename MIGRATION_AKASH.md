@@ -26,31 +26,40 @@ Akash's own repo, `akash-suresh/coach-phelps`, to make the shared site work for 
 4. **Log into the shared site**, existing-repo onboarding branch, confirm the badminton
    match-analytics dashboard renders his data correctly post-rename.
 
-5. **Verify sync works through the shared site** — trigger a sync from the shared site's UI,
+5. **Add the `data/aggregate.json` publish step to `sync.yml`.** This is Akash's own design
+   (issue #138): `sync.yml` gains a small, mechanical step that reuses `build-data.mjs`'s merge
+   logic (refactored to also support this output path) to produce and commit
+   `data/aggregate.json` at the repo root — `activities`, `challenge_v2`, `current_week`,
+   `workouts`, `sync_status`, plus `schema_version` + `generated_at`. Idempotent — no-op commit
+   when nothing changed, mirroring `apply-coach-patch.yml`'s existing guard pattern. Akash owns
+   the supported `schema_version` range policy. This corrects an earlier version of this doc that
+   claimed `sync.yml` stays fully unchanged — it doesn't, but the change is small and contained.
+
+6. **Verify sync works through the shared site** — trigger a sync from the shared site's UI,
    confirm `.github/workflows/sync.yml`'s `workflow_dispatch` trigger fires correctly using the
-   session's own GitHub token (issue #18). `sync.yml` already exists in this repo, unchanged.
+   shared bot token, now resolving the target repo from session instead of a static env var
+   (issue #18 — no new OAuth scope needed, see `WEBSITE_UNIFICATION_PLAN.md` Section 8.7).
 
-6. **[Proposed — discuss with Akash first, not yet decided] Remove `ui/` from
-   `akash-coach-phelps`.** Once the shared site works, a personal deployment is redundant —
-   remove `ui/client`, `ui/netlify/`, `netlify.toml`, `pnpm-lock.yaml`, `package.json`,
-   `ui/scripts`, `tsconfig.json`, `vite.config.ts`. **Do not execute this step until confirmed
-   with Akash** — same open question as in `MIGRATION_SKANDA.md`: the template's `ui/` merge
-   (issue #14) is where combined UI work lives going forward, but whether personal repos keep an
-   inert copy as a fallback is still undecided.
+7. **[Decided] Remove `ui/` from `akash-coach-phelps`, sequenced last.** Confirmed — once the
+   shared site is stable, a personal deployment is redundant. Remove `ui/client`, `ui/netlify/`,
+   `netlify.toml`, `pnpm-lock.yaml`, `package.json`, `ui/scripts`, `tsconfig.json`,
+   `vite.config.ts`. No action needed on this step until the shared site (Milestones 1-4) is
+   confirmed working end to end — don't touch `ui/` in this repo before then.
 
-7. **Decommission the Netlify deployment** for `akash-coach-phelps`, once confirmed redundant.
+8. **Decommission the Netlify deployment** for `akash-coach-phelps`, once confirmed redundant.
 
-8. **Leave untouched:** `SOUL.md`, `training/`, `sessions/`, `templates/`, `scripts/`, `strava/`,
+9. **Leave untouched:** `SOUL.md`, `training/`, `sessions/`, `templates/`, `scripts/`, `strava/`,
    `ios/` (the HealthKit sync app — entirely orthogonal to website unification, keeps writing to
    `training/history/*` in the same shape it does today), `.github/workflows/`,
    `.github/agents/` (including `ios-builder.md` — still relevant to his sync mechanism), `docs/`,
    `skills/`, `tests/`, `CLAUDE.md`.
 
-9. **Optional doc cleanup (low priority):** once the shared site is confirmed stable, update
-   `SETUP.md`/`README.md` to drop Netlify references and point at "log into the shared site."
+10. **Optional doc cleanup (low priority):** once the shared site is confirmed stable, update
+    `SETUP.md`/`README.md` to drop Netlify references and point at "log into the shared site."
 
 ## What does NOT need to be added
 
-No new files are needed in `akash-coach-phelps` for GitHub auth. The OAuth App, session handling,
-and Vercel KV all live in the shared site (`coach-phelps-template`) only. This repo just needs to
-stay discoverable (step 2) and dispatchable (step 5) — both already true today.
+No new files are needed in `akash-coach-phelps` for GitHub auth. The OAuth App and session
+handling live in the shared site (`coach-phelps-template`) only — no persistent storage layer
+needed either (Section 6's resolution is session-carried, not a KV lookup). This repo just needs
+to stay discoverable (step 2) and dispatchable (step 6) — both already true today.
