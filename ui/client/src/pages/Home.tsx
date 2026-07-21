@@ -5,9 +5,6 @@
  * Data: activities.json + challenge_v2.json (single source of truth).
  */
 import { useState, useMemo } from "react";
-import activitiesData from "@/data/activities.json";
-import challengeDataRaw from "@/data/challenge_v2.json";
-import syncStatusData from "@/data/sync_status.json";
 import type { ChallengeV2 } from "@/lib/challenge";
 import {
   Activity,
@@ -24,11 +21,22 @@ import { VolumeTrend } from "@/components/VolumeTrend";
 import { ActivityHeatmap } from "@/components/ActivityHeatmap";
 import { SideQuestTracker } from "@/components/SideQuestTracker";
 import { ActivityFeed } from "@/components/ActivityFeed";
-
-const activities = activitiesData as Activity[];
-const challengeData = challengeDataRaw as unknown as ChallengeV2;
+import { RepoDataGate } from "@/components/RepoDataGate";
+import { useRepoData, type RepoData } from "@/hooks/useRepoData";
 
 export default function Home() {
+  const { data, loading, error, schemaUnsupported } = useRepoData();
+  return (
+    <RepoDataGate loading={loading} error={error} schemaUnsupported={schemaUnsupported}>
+      {data && <HomeContent data={data} />}
+    </RepoDataGate>
+  );
+}
+
+function HomeContent({ data }: { data: RepoData }) {
+  const activities = data.activities as Activity[];
+  const challengeData = data.challenge_v2 as unknown as ChallengeV2;
+  const syncStatusData = data.sync_status as any;
   const [sportFilter, setSportFilter] = useState<string>("all");
   const [timeFilter, setTimeFilter] = useState<string>("all");
 

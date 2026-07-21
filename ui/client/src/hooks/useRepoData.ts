@@ -1,0 +1,112 @@
+/**
+ * useRepoData — loads the dashboard's data, from either source:
+ *
+ * - Local dev (import.meta.env.DEV): the statically bundled client/src/data/*.json
+ *   files, synchronously, same as before this existed - zero behavior change for
+ *   `npm run dev`.
+ * - Hosted deployment: fetches /api/repo-file once (the signed-in user's resolved
+ *   repo's data/aggregate.json), cached module-wide so navigating between pages
+ *   doesn't refetch.
+ *
+ * Returned shape mirrors the old per-file static imports so each page only needs
+ * to swap `const x = xData as Type` for `const x = data.x as Type` behind a
+ * loading/error check - not a rewrite of page logic.
+ */
+import { useEffect, useState } from "react";
+import activitiesData from "@/data/activities.json";
+import challengeDataRaw from "@/data/challenge_v2.json";
+import syncStatusData from "@/data/sync_status.json";
+import workoutsData from "@/data/workouts.json";
+import sleepLogRaw from "@/data/sleep_log.json";
+import questHistoryRaw from "@/data/quest_history.json";
+
+export interface RepoData {
+  activities: unknown[];
+  challenge_v2: unknown;
+  workouts: unknown;
+  sync_status: unknown;
+  sleep_log: unknown[];
+  quest_history: unknown;
+  schema_version?: number;
+}
+
+const LOCAL_DATA: RepoData = {
+  activities: activitiesData as unknown[],
+  challenge_v2: challengeDataRaw,
+  workouts: workoutsData,
+  sync_status: syncStatusData,
+  sleep_log: sleepLogRaw as unknown[],
+  quest_history: questHistoryRaw,
+};
+
+// Bump when the aggregate shape changes in a way old dashboards can't render
+// safely. Kept in sync with build-data.mjs's SCHEMA_VERSION.
+const SUPPORTED_SCHEMA_VERSION = 1;
+
+export interface UseRepoDataResult {
+  data: RepoData | null;
+  loading: boolean;
+  error: string | null;
+  schemaUnsupported: boolean;
+}
+
+let cachedData: RepoData | null = null;
+
+function initialState(): UseRepoDataResult {
+  if (import.meta.env.DEV) {
+    return { data: LOCAL_DATA, loading: false, error: null, schemaUnsupported: false };
+  }
+  if (cachedData) {
+    return { data: cachedData, loading: false, error: null, schemaUnsupported: false };
+  }
+  return { data: null, loading: true, error: null, schemaUnsupported: false };
+}
+
+export function useRepoData(): UseRepoDataResult {
+  const [state, setState] = useState<UseRepoDataResult>(initialState);
+
+  useEffect(() => {
+    if (import.meta.env.DEV || cachedData) return;
+
+    let cancelled = false;
+
+    fetch("/api/repo-file")
+      .then(async (res) => {
+        if (cancelled) return;
+
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          setState({
+            data: null,
+            loading: false,
+            error: body.error ?? "Failed to load your data",
+            schemaUnsupported: false,
+          });
+          return;
+        }
+
+        const aggregate = (await res.json()) as RepoData;
+        if (
+          typeof aggregate.schema_version === "number" &&
+          aggregate.schema_version > SUPPORTED_SCHEMA_VERSION
+        ) {
+          setState({ data: null, loading: false, error: null, schemaUnsupported: true });
+          return;
+        }
+
+        cachedData = aggregate;
+        setState({ data: aggregate, loading: false, error: null, schemaUnsupported: false });
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setState({ data: null, loading: false, error: "Failed to load your data", schemaUnsupported: false });
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return state;
+}

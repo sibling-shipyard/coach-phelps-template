@@ -144,8 +144,9 @@ gets solved before this path is actually built).
 
 ## 7. Live data fetching — Repo-as-CDN aggregate (replaces build-time bundling)
 
-`build-data.mjs` reads the filesystem at build time — incompatible with one deployment serving N
-repos, and with data changing independently of redeploys (syncs run via `sync.yml`).
+**Status: implemented (issue #17), verified end-to-end against real data.** `build-data.mjs`
+reads the filesystem at build time — incompatible with one deployment serving N repos, and with
+data changing independently of redeploys (syncs run via `sync.yml`).
 
 **Reconciled with Akash's design (issues #138/#140) — adopted over the original plan of live
 per-file fetching.** Instead of the shared site fetching several raw files at request time and
@@ -158,10 +159,21 @@ merging them itself, each personal repo's own sync pipeline publishes one pre-me
   build-time behavior, kept for local single-repo dev) or to a new committed artifact,
   **`data/aggregate.json`**, at the repo root. Idempotent commit, mirroring
   `apply-coach-patch.yml`'s no-op-when-unchanged guard.
-- `data/aggregate.json` shape: `activities`, `challenge_v2`, `current_week`, `workouts`,
-  `sync_status`, plus a top-level **`schema_version`** and `generated_at`.
-- New Edge function `ui/api/repo-file.ts`: session (`repo_full_name` from the JWT, Section 6) →
+- `data/aggregate.json` actual shape (adjusted from the original plan during implementation —
+  see issue #17): `activities`, `challenge_v2`, `workouts`, `sync_status`, `sleep_log`,
+  `quest_history`, plus a top-level **`schema_version`** and `generated_at`. `current_week` was
+  dropped (unused anywhere in the codebase); `sleep_log`/`quest_history` were added (real pages
+  consume them — fetching one aggregate but still needing two more separate calls for these
+  would have defeated the point).
+- New function `ui/api/repo-file.ts`: session (`repo_full_name` from the JWT, Section 6) →
   **one** GitHub Contents API call for `data/aggregate.json` — not several raw files.
+  **Real gotcha found during end-to-end testing:** GitHub's Contents API only inlines base64
+  file content for files under ~1MB — a real activity-history aggregate blows past that easily
+  (confirmed against real synced data: ~2.8MB, came back with `encoding: "none"`, empty
+  `content`). Fixed by requesting the `.raw` media type
+  (`Accept: application/vnd.github.raw+json`) instead, which returns the actual file bytes
+  regardless of size — no base64 decode needed. This is exactly the class of bug local
+  `tsc`/`build` checks can't catch, only a real deployment against real data surfaces it.
 - Client: replace static `import x from "../data/y.json"` with a `useRepoData()` fetch hook that
   loads the aggregate, adapting its shape to what components already consume — a thin adapter,
   not a component rewrite.
@@ -235,10 +247,10 @@ File in whichever repo Section 4 lands on.
 |---|---|---|---|---|
 | -1 | Checkpoint branch (permanent reference, lives in this repo) | Tech Lead | — | **Done.** |
 | 0 | File Section 9 issue + analytics-optionality issue (Section 12) | Tech Lead | — | **Done.** Issues filed, no code |
-| 1 | Codebase merge (Section 8) | UI Expert, `ui/` only | — | `npm run build` succeeds, all routes reachable, `npm run dev` still works unauthenticated |
-| 2 | Auth + provisioning (Sections 5-6) | Tech Lead / worker with `ui/api/` access | Sequenced after 1 | Fresh GitHub account can log in, choose new/existing, reach dashboard shell |
-| 3 | Live data fetching (Section 7) | Tech Lead/worker + UI Expert coordination | 1, 2 | Two real accounts, each seeing only their own repo's data, no bleed |
-| 4 | `trigger-sync.ts` rewrite + retirement of both standalone deployments (Section 8.7-8.8) | Tech Lead/worker | 2, 3 | Sync button triggers the right user's workflow; data updates without redeploy; Akash's Netlify site and Skanda's separate Vercel deployment both decommissioned |
+| 1 | Codebase merge (Section 8) | UI Expert, `ui/` only | — | **Done** (#14). `npm run build` succeeds, all routes reachable, `npm run dev` still works unauthenticated |
+| 2 | Auth + provisioning (Sections 5-6) | Tech Lead / worker with `ui/api/` access | Sequenced after 1 | **Done** (#16, migrated to a GitHub App per #25). Fresh GitHub account can log in, choose new/existing, reach dashboard shell |
+| 3 | Live data fetching (Section 7) | Tech Lead/worker + UI Expert coordination | 1, 2 | **Done** (#17), verified against real synced data from Skanda's repo (see Section 7's Contents API gotcha). Akash's account and the "no bleed between two accounts" check still pending |
+| 4 | `trigger-sync.ts` rewrite + retirement of both standalone deployments (Section 8.7-8.8) | Tech Lead/worker | 2, 3 | Not started. Sync button triggers the right user's workflow; data updates without redeploy; Akash's Netlify site and Skanda's separate Vercel deployment both decommissioned |
 
 Milestones 1 and 2 can run in parallel. Section 4 is resolved (see above), so Milestone 2 has no
 remaining blocker before building `provision-repo.ts`'s template reference.

@@ -1,10 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import activitiesData from "@/data/activities.json";
-import sleepLogRaw from "@/data/sleep_log.json";
-import questHistoryRaw from "@/data/quest_history.json";
-import challengeDataRaw from "@/data/challenge_v2.json";
-import syncStatusData from "@/data/sync_status.json";
 import { Activity, groupByMonth, totalTime, parseLocal, computeSleepStreak, daysElapsedInMonth, daysInMonth, isCurrentMonth } from "@/lib/activities";
 import type { ChallengeV2 } from "@/lib/challenge";
 import { CommandStrip } from "@/components/CommandStrip";
@@ -12,8 +7,8 @@ import { MonthCard } from "@/components/MonthCard";
 import { WorkoutBreakdownCard } from "@/components/WorkoutBreakdownCard";
 import { SleepSummaryCard } from "@/components/SleepSummaryCard";
 import { QuestSummaryCard } from "@/components/QuestSummaryCard";
-
-const activities = activitiesData as Activity[];
+import { RepoDataGate } from "@/components/RepoDataGate";
+import { useRepoData, type RepoData } from "@/hooks/useRepoData";
 
 interface SleepEntry {
   date: string;
@@ -27,12 +22,6 @@ interface QuestHistory {
   quests: Record<string, { name: string; entries: QuestEntry[] }>;
 }
 
-const sleepLog = sleepLogRaw as unknown as SleepEntry[];
-const questHistory = questHistoryRaw as unknown as QuestHistory;
-const challengeData = challengeDataRaw as unknown as ChallengeV2;
-const sleepQuest = challengeData.quests.find((q) => q.id === "sleep");
-const sleepStreak = computeSleepStreak(sleepQuest?.completed_dates ?? []);
-
 const MONTH_NAMES = [
   "January","February","March","April","May","June",
   "July","August","September","October","November","December",
@@ -44,6 +33,22 @@ function getAvailableYears(activities: Activity[]): number[] {
 }
 
 export default function MonthlyAnalytics() {
+  const { data, loading, error, schemaUnsupported } = useRepoData();
+  return (
+    <RepoDataGate loading={loading} error={error} schemaUnsupported={schemaUnsupported}>
+      {data && <MonthlyAnalyticsContent data={data} />}
+    </RepoDataGate>
+  );
+}
+
+function MonthlyAnalyticsContent({ data }: { data: RepoData }) {
+  const activities = data.activities as Activity[];
+  const sleepLog = data.sleep_log as unknown as SleepEntry[];
+  const questHistory = data.quest_history as unknown as QuestHistory;
+  const challengeData = data.challenge_v2 as unknown as ChallengeV2;
+  const syncStatusData = data.sync_status as any;
+  const sleepQuest = challengeData.quests.find((q) => q.id === "sleep");
+  const sleepStreak = computeSleepStreak(sleepQuest?.completed_dates ?? []);
   const now = new Date();
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);

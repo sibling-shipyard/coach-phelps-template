@@ -1,8 +1,5 @@
 import { useCallback, useMemo } from "react";
 import { useLocation, useSearch } from "wouter";
-import activitiesData from "@/data/activities.json";
-import challengeDataRaw from "@/data/challenge_v2.json";
-import syncStatusData from "@/data/sync_status.json";
 import type { ChallengeV2 } from "@/lib/challenge";
 import { Activity, getTrainingCategory, computeSleepStreak, formatDistance } from "@/lib/activities";
 import { CommandStrip } from "@/components/CommandStrip";
@@ -16,11 +13,22 @@ import { FormIndicator } from "@/components/run-analytics/FormIndicator";
 import { HrVsPaceCorrelation } from "@/components/run-analytics/HrVsPaceCorrelation";
 import { RunSessionList } from "@/components/run-analytics/RunSessionList";
 import { paceSecPerKm, formatPace, rollingAvgPace } from "@/components/run-analytics/shared";
-
-const activitiesRaw = activitiesData as Activity[];
-const challengeData = challengeDataRaw as unknown as ChallengeV2;
+import { RepoDataGate } from "@/components/RepoDataGate";
+import { useRepoData, type RepoData } from "@/hooks/useRepoData";
 
 export default function RunAnalytics() {
+  const { data, loading, error, schemaUnsupported } = useRepoData();
+  return (
+    <RepoDataGate loading={loading} error={error} schemaUnsupported={schemaUnsupported}>
+      {data && <RunAnalyticsContent data={data} />}
+    </RepoDataGate>
+  );
+}
+
+function RunAnalyticsContent({ data }: { data: RepoData }) {
+  const activitiesRaw = data.activities as Activity[];
+  const challengeData = data.challenge_v2 as unknown as ChallengeV2;
+  const syncStatusData = data.sync_status as any;
   const sleepQuest = challengeData.quests.find((q) => q.id === "sleep");
   const sleepStreak = useMemo(
     () => computeSleepStreak(sleepQuest?.completed_dates ?? []),

@@ -1,15 +1,14 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { Link, useParams } from "wouter";
 import { ArrowLeft, Repeat } from "lucide-react";
-import workoutsData from "@/data/workouts.json";
 import { Workout, WorkoutsData, WORKOUT_TYPE_CONFIG, formatTimer } from "@/lib/workouts";
 import { useTimerEngine } from "./useTimerEngine";
 import { TimerScreens } from "./TimerScreens";
 import { TimerControls } from "./TimerControls";
 import { WorkoutOverview } from "./WorkoutOverview";
 import { WorkoutComplete } from "./WorkoutComplete";
-
-const data = workoutsData as WorkoutsData;
+import { RepoDataGate } from "@/components/RepoDataGate";
+import { useRepoData, type RepoData } from "@/hooks/useRepoData";
 
 // ─── Active Timer ──────────────────────────────────────────────────────────
 
@@ -239,6 +238,16 @@ function ActiveTimer({
 // ─── Orchestrator ──────────────────────────────────────────────────────────
 
 export default function WorkoutTimer() {
+  const { data: repoData, loading, error, schemaUnsupported } = useRepoData();
+  return (
+    <RepoDataGate loading={loading} error={error} schemaUnsupported={schemaUnsupported}>
+      {repoData && <WorkoutTimerContent repoData={repoData} />}
+    </RepoDataGate>
+  );
+}
+
+function WorkoutTimerContent({ repoData }: { repoData: RepoData }) {
+  const data = repoData.workouts as WorkoutsData;
   const params = useParams<{ id: string }>();
   const workoutId = params.id;
 
