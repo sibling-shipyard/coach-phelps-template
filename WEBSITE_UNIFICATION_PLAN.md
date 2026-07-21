@@ -2,9 +2,9 @@
 
 **Status:** Design finalized — all open decisions resolved. Checkpoint branch exists. Execution
 not started (Milestones 1-4).
-**Source of truth for background:** `UNIFICATION_PLAN.md` (repo root) covers the full three-repo
-fork history; this doc covers only the website-unification slice, sequenced ahead of that plan's
-broader Phase 1/2.
+**Source of truth for background:** `SCALING_PLAN.md` (repo root) covers the full three-repo
+fork history plus everything only relevant past two users; this doc is the real, executable plan
+for unifying Skanda and Akash onto one shared site now.
 
 ---
 
@@ -19,6 +19,10 @@ deployment that serves each logged-in user their own repo's data.
 - Sync-source pluggability (HealthKit/iOS) is out of scope.
 - Reconciling Akash's rich badminton-match data model is out of scope — tracked as a filed issue
   (Section 9), not built now.
+- Skanda and Akash both onboard via Section 6's **existing-repo** branch, not the new-user
+  template-generate branch — they already have populated repos. That means the "new user's repo
+  inherits an unused `ui/` folder from template-generate" gap doesn't apply to either of them; it
+  only matters for friend #3+ and is tracked in `SCALING_PLAN.md`, not built now.
 
 ## 2. Checkpoint (done)
 
@@ -127,7 +131,10 @@ repos, and with data changing independently of redeploys (syncs run via `sync.ym
 6. Keep template's `build-data.mjs` (superset).
 7. `trigger-sync.ts` gets rewritten as part of Sections 5-7's work — resolve target repo from
    session, not a static env var. Akash's Netlify version is superseded, not ported.
-8. Decommission Akash's Netlify deployment once Vercel parity is confirmed.
+8. Decommission **both** standalone deployments once the shared site is confirmed working
+   end-to-end for both accounts: Akash's Netlify site, and Skanda's separate `coach-phelps`
+   Vercel deployment. Neither of you needs your own deployment once the one shared deployment
+   (Section 4) serves both — that's the whole point of unifying.
 
 ## 9. Deferred issue — filed, not built
 
@@ -165,22 +172,25 @@ File in whichever repo Section 4 lands on.
 | 1 | Codebase merge (Section 8) | UI Expert, `ui/` only | — | `npm run build` succeeds, all routes reachable, `npm run dev` still works unauthenticated |
 | 2 | Auth + provisioning (Sections 5-6) | Tech Lead / worker with `ui/api/` access | Sequenced after 1 | Fresh GitHub account can log in, choose new/existing, reach dashboard shell |
 | 3 | Live data fetching (Section 7) | Tech Lead/worker + UI Expert coordination | 1, 2 | Two real accounts, each seeing only their own repo's data, no bleed |
-| 4 | `trigger-sync.ts` rewrite + Netlify retirement (Section 8.7-8.8) | Tech Lead/worker | 2, 3 | Sync button triggers the right user's workflow; data updates without redeploy |
+| 4 | `trigger-sync.ts` rewrite + retirement of both standalone deployments (Section 8.7-8.8) | Tech Lead/worker | 2, 3 | Sync button triggers the right user's workflow; data updates without redeploy; Akash's Netlify site and Skanda's separate Vercel deployment both decommissioned |
 
 Milestones 1 and 2 can run in parallel. Section 4 is resolved (see above), so Milestone 2 has no
 remaining blocker before building `provision-repo.ts`'s template reference.
 
 ## 12. Open questions filed as issues, not blocking
 
-These are real gaps but don't block Milestones 1-4:
+These are real gaps but don't block Milestones 1-4. Full detail lives in `SCALING_PLAN.md`
+(everything relevant only past two users) — kept here as a pointer, not duplicated:
 
 - **Badminton match-analytics data model generalization** (`akash_won` → `player_won` etc.) —
   Section 9, [issue #12](https://github.com/akash-suresh/coach-phelps-template/issues/12).
-- **Analytics page set configurable per user** — for now, Run, Badminton, and Badminton Match
-  Analytics all ship to every user unconditionally, regardless of sport. Making this
-  configurable (e.g. the `features.json` toggle sketched in `UNIFICATION_PLAN.md` Phase 2) is
-  deferred to [issue #13](https://github.com/akash-suresh/coach-phelps-template/issues/13), not
-  designed now.
+  Relevant now (Milestone 1), not deferred.
+- **Analytics page set configurable per user** — [issue
+  #13](https://github.com/akash-suresh/coach-phelps-template/issues/13), deferred, see
+  `SCALING_PLAN.md`.
+- **New-user `ui/` leakage via template-generate** — friend #3+ only, see `SCALING_PLAN.md`.
+- **IP boundary vs. local Claude Code, funding path for a hosted chat surface** — see
+  `SCALING_PLAN.md`.
 
 ## 11. Verification
 

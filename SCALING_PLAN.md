@@ -1,4 +1,11 @@
-# Unifying Coach Phelps: Skanda's repo, Akash's fork, and the existing template
+# Scaling Coach Phelps Beyond Two People
+
+**Status:** Website unification itself (Skanda + Akash, real shared site) is underway — see
+`WEBSITE_UNIFICATION_PLAN.md` for that executable plan. This doc is the parking lot for
+everything that only matters once there's a friend #3: fork history/background, provisioning
+for brand-new users, page-set configurability, sync-source pluggability, and the IP-boundary
+and funding questions raised while planning unification. Nothing here blocks
+`WEBSITE_UNIFICATION_PLAN.md`'s milestones.
 
 ## Context
 
@@ -176,6 +183,14 @@ conversation itself works (still local Claude Code / Claude Pro, per user, per r
   and paste it into repo settings" step that's the actual CS-knowledge barrier today. This
   is real engineering work (GitHub API repo-secrets endpoint requires libsodium encryption
   client-side) but bounded and well-documented by GitHub.
+- **New-user `ui/` leakage — file, don't build:** the `generate`-from-template endpoint (Section
+  6, branch 3 in `WEBSITE_UNIFICATION_PLAN.md`) copies the *entire* template repo, `ui/` included,
+  into a brand-new user's repo. Once the shared site is live, that `ui/` folder is dead weight —
+  the new user never builds or deploys it, the shared site is the only UI. Doesn't affect Skanda
+  or Akash (both onboard via the existing-repo branch, already-populated repos). Needs solving
+  before friend #3: either strip `ui/`/`vercel.json`/`ui/api` from the repo right after
+  `provision-repo.ts` creates it, or split into a data-only template used just for provisioning.
+  Tracked as a filed issue, not designed yet.
 - **Plug-and-play pages become a real toggle, not just a setup-time file copy:** with a
   shared site, the "which optional page modules did you install" question from Phase 1 can
   become an actual per-user settings toggle read from a small `features.json` in their repo,
@@ -201,6 +216,40 @@ coaching data or LLM usage: data lives in each user's own free GitHub repo, comp
 dashboard views are served from one shared (cheap) Vercel deploy, and the Claude Pro
 constraint is the one piece that remains genuinely unsolved and worth being upfront about
 when inviting friend #3+.
+
+## IP Boundary vs. Local Claude Code — Deferred, Genuinely Unresolved
+
+Surfaced while explaining what the post-unification workflow looks like: the whole coaching
+system runs on Claude Code reading `SOUL.md` (and the rest of the repo) from the filesystem it's
+pointed at — there's no server-side "brain." That means "give a new user only the minimal
+non-UI files, don't let them see SOUL.md / the coaching logic / how the rules engine works"
+directly conflicts with "coaching runs locally on the user's own Claude Pro subscription, no
+hosted LLM cost for us." You can't fully have both under the current architecture.
+
+Three options, none decided, none needed while it's just Skanda + Akash (nothing to protect from
+each other):
+
+1. **Accept it's not protectable in the local-Claude-Code model.** Anyone invited can read
+   SOUL.md, fork it, run their own instance independent of you. Probably fine for a
+   friends-and-family tool — the real "product" is the ongoing coaching relationship/tuning, not
+   a defensible secret. A values call, not a technical one.
+2. **Move coaching to a hosted chat surface**, SOUL.md stays server-side. Reopens the Claude Pro
+   cost problem below — this is the option that pairs with the funding-path note.
+3. **Hybrid — minimal data-only repo per user, private "brain" repo you control**, with a
+   bootstrap step that fetches SOUL.md from the private source at session start rather than
+   committing it to the user's repo. Real new engineering, undesigned.
+
+Revisit before inviting friend #3, not before.
+
+## Funding Path for a Future Hosted Chat Surface
+
+The "Claude Pro dependency" section above explicitly parks on option (a) — every user brings
+their own subscription — because centralizing LLM cost is "a real ongoing expense, not a
+one-time engineering problem." One idea raised while discussing the IP boundary above, worth
+recording for whenever Phase 2 gets picked up: pair a hosted chat surface (option 2 above) with
+a cheaper model path than everyone's own Claude Pro — a Gemini free tier, or a metered Claude API
+integration billed centrally instead of per-user subscriptions. Not designed, not costed, just an
+idea to start from instead of re-deriving the option space from scratch later.
 
 ## Ownership and Open Questions
 
