@@ -1,6 +1,7 @@
 # Website Unification
 
-**Status:** Design — Milestone -1 (checkpoint branch) complete, everything else not started.
+**Status:** Design finalized — all open decisions resolved. Checkpoint branch exists. Execution
+not started (Milestones 1-4).
 **Source of truth for background:** `UNIFICATION_PLAN.md` (repo root) covers the full three-repo
 fork history; this doc covers only the website-unification slice, sequenced ahead of that plan's
 broader Phase 1/2.
@@ -25,6 +26,9 @@ deployment that serves each logged-in user their own repo's data.
 work started — a snapshot of the working, cloneable template as it existed pre-unification.
 Excludes `UNIFICATION_PLAN.md` and this plan doc (planning artifacts, not product).
 
+This branch is permanent — it lives in this same repo indefinitely as the pre-unification
+reference point. It is not a step toward standing up a separate repo; see Section 4, decided.
+
 ## 3. Facts established by codebase comparison
 
 | Area | Finding |
@@ -37,12 +41,12 @@ Excludes `UNIFICATION_PLAN.md` and this plan doc (planning artifacts, not produc
 | UI primitives | Akash's `components/ui/` (shadcn) is a strict superset of template's — additive merge, no conflicts. |
 | Dead code | Akash's `Map.tsx` (unused Google Maps/Forge proxy) and `Deprecated.tsx` — drop, don't port. |
 
-## 4. Open decision — which repo hosts the site
+## 4. Hosting repo — decided: `coach-phelps-template` itself
 
-`coach-phelps-template` directly, or a fresh clone into a dedicated repo (keeping the template pure
-for people who just want to clone-and-run standalone). Skanda is deciding this with Akash. Affects
-only the `template_owner/template_repo` reference used in Section 6's provisioning step — nothing
-else in this plan depends on it. **Resolve before starting Section 6.**
+`coach-phelps-template` (`akash-suresh/coach-phelps-template`) hosts the unified site directly. No
+separate repo is created to keep the template "pure" — the `checkpoint-before-unification` branch
+already serves that purpose as a permanent, in-repo reference to the pre-unification state. This is
+the `template_owner/template_repo` reference used in Section 6's provisioning step.
 
 ## 5. Auth architecture — decided: raw GitHub OAuth App
 
@@ -53,8 +57,13 @@ else in this plan depends on it. **Resolve before starting Section 6.**
 | Real tradeoff | We own CSRF-state validation, cookie signing, and token handling correctness ourselves. Low stakes at 2 users; at 100 real GitHub accounts, a mistake here has real blast radius, and there's no vendor security team behind it. | Offloads that correctness to an audited, widely-used flow. Adds a third-party account/service dependency, which cuts against this project's "your data, your repo, no central dependency" philosophy — worth it mainly if Section 6 also needs Supabase for storage. |
 | Decision | **Chosen.** Zero new service dependency, fits the project's existing ethos, and the team is willing to spend the extra implementation time to get it right. If confidence in the self-rolled implementation is ever in doubt, swapping to Supabase Auth later is a contained change (same GitHub OAuth App, same session concept — isolated to `ui/api/auth-*.ts` and the session-lookup call sites). | Fallback option if the raw flow proves too costly to maintain correctly, or if Section 6 lands on Supabase for storage anyway. |
 
+**OAuth App ownership — decided:** registered under a new shared GitHub org (name TBD at
+registration time — not blocking), with both Skanda and Akash as org owners. This replaces the
+"one person's account + the other as admin" option from `UNIFICATION_PLAN.md`'s open questions,
+and unblocks Milestone 2 (Section 4 is resolved, so there's no longer a dependency to wait on).
+
 Concrete flow:
-1. Register a GitHub OAuth App. Scopes: `read:user`, `repo`.
+1. Register a GitHub OAuth App under the shared org. Scopes: `read:user`, `repo`.
 2. `ui/api/auth-login.ts` — redirects to GitHub's authorize URL with a CSRF `state` nonce.
 3. `ui/api/auth-callback.ts` — validates `state`, exchanges `code` for a token, fetches `GET /user`,
    sets an HttpOnly/Secure/SameSite=Lax session cookie: a signed JWT (`SESSION_SECRET` env var)
@@ -120,7 +129,11 @@ repos, and with data changing independently of redeploys (syncs run via `sync.ym
    session, not a static env var. Akash's Netlify version is superseded, not ported.
 8. Decommission Akash's Netlify deployment once Vercel parity is confirmed.
 
-## 9. Deferred issue — file, don't build
+## 9. Deferred issue — filed, not built
+
+**Filed:** [#12](https://github.com/akash-suresh/coach-phelps-template/issues/12) — `[ui-expert]
+Generalize badminton match-analytics data model for multi-tenant use`. Spec below is the source
+of truth for the issue body.
 
 **Title:** Generalize the badminton match-analytics data model for multi-tenant use
 
@@ -147,15 +160,27 @@ File in whichever repo Section 4 lands on.
 
 | # | What | Owner | Depends on | Exit criteria |
 |---|---|---|---|---|
-| -1 | Checkpoint branch | Tech Lead | — | **Done.** |
-| 0 | File Section 9 issue | Tech Lead | — | Issue filed, no code |
+| -1 | Checkpoint branch (permanent reference, lives in this repo) | Tech Lead | — | **Done.** |
+| 0 | File Section 9 issue + analytics-optionality issue (Section 12) | Tech Lead | — | **Done.** Issues filed, no code |
 | 1 | Codebase merge (Section 8) | UI Expert, `ui/` only | — | `npm run build` succeeds, all routes reachable, `npm run dev` still works unauthenticated |
 | 2 | Auth + provisioning (Sections 5-6) | Tech Lead / worker with `ui/api/` access | Sequenced after 1 | Fresh GitHub account can log in, choose new/existing, reach dashboard shell |
 | 3 | Live data fetching (Section 7) | Tech Lead/worker + UI Expert coordination | 1, 2 | Two real accounts, each seeing only their own repo's data, no bleed |
 | 4 | `trigger-sync.ts` rewrite + Netlify retirement (Section 8.7-8.8) | Tech Lead/worker | 2, 3 | Sync button triggers the right user's workflow; data updates without redeploy |
 
-Milestones 1 and 2 can run in parallel. Milestone 2 must resolve Section 4's open decision before
-building `provision-repo.ts`'s template reference.
+Milestones 1 and 2 can run in parallel. Section 4 is resolved (see above), so Milestone 2 has no
+remaining blocker before building `provision-repo.ts`'s template reference.
+
+## 12. Open questions filed as issues, not blocking
+
+These are real gaps but don't block Milestones 1-4:
+
+- **Badminton match-analytics data model generalization** (`akash_won` → `player_won` etc.) —
+  Section 9, [issue #12](https://github.com/akash-suresh/coach-phelps-template/issues/12).
+- **Analytics page set configurable per user** — for now, Run, Badminton, and Badminton Match
+  Analytics all ship to every user unconditionally, regardless of sport. Making this
+  configurable (e.g. the `features.json` toggle sketched in `UNIFICATION_PLAN.md` Phase 2) is
+  deferred to [issue #13](https://github.com/akash-suresh/coach-phelps-template/issues/13), not
+  designed now.
 
 ## 11. Verification
 

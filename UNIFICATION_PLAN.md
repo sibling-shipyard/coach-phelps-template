@@ -208,11 +208,12 @@ Confirmed: `coach-phelps-template` (and the eventual Phase 2 hosted site) is joi
 by Skanda and Akash going forward — not one person's repo the other treats as upstream.
 
 Remaining open questions, to work out as Phase 1/2 get built rather than block on now:
-- Whose analytics pages/components become the "default example" in the template vs.
-  optional modules — running (Skanda's) or badminton (Akash's), or both as equally-weighted
-  examples?
+- ~~Whose analytics pages/components become the "default example"~~ — **Resolved:** all three
+  existing pages (Run, Badminton, Badminton Match Analytics) ship to every user for now, no
+  default/optional split. Making page inclusion configurable per user is tracked as a filed
+  issue (see `WEBSITE_UNIFICATION_PLAN.md` Section 12), not designed yet.
 - Once Akash's iOS app is real: does it stay iOS-only, or is Android/other-platform sync a
-  future ask from other friends? (Not urgent — only matters once past friend #2-3.)
-- For Phase 2's auto-provisioning: does the GitHub OAuth app live under a shared org, or one
-  person's account with the other as admin? Worth deciding before building it, since it's
-  the credential the "create repo on user's behalf" flow depends on.
+  future ask from other friends? (Not urgent — only matters once past friend #2-3. Still open.)
+- ~~For Phase 2's auto-provisioning: does the GitHub OAuth app live under a shared org~~ —
+  **Resolved:** a new shared GitHub org, with both Skanda and Akash as owners. See
+  `WEBSITE_UNIFICATION_PLAN.md` Section 5.
