@@ -1,9 +1,6 @@
 import { useCallback, useMemo } from "react";
 import { useLocation, useSearch } from "wouter";
 import { HelpCircle } from "lucide-react";
-import activitiesData from "@/data/activities.json";
-import challengeDataRaw from "@/data/challenge_v2.json";
-import syncStatusData from "@/data/sync_status.json";
 import type { ChallengeV2 } from "@/lib/challenge";
 import { Activity, getTrainingCategory, computeSleepStreak } from "@/lib/activities";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
@@ -18,11 +15,22 @@ import { FitnessFatigueChart } from "@/components/badminton-analytics/FitnessFat
 import { LoadStatus } from "@/components/badminton-analytics/LoadStatus";
 import { SessionList } from "@/components/badminton-analytics/SessionList";
 import { computeSessionTrimp, rollingAvgTrimp } from "@/components/badminton-analytics/shared";
-
-const activitiesRaw = activitiesData as Activity[];
-const challengeData = challengeDataRaw as unknown as ChallengeV2;
+import { RepoDataGate } from "@/components/RepoDataGate";
+import { useRepoData, type RepoData } from "@/hooks/useRepoData";
 
 export default function BadmintonAnalytics() {
+  const { data, loading, error, schemaUnsupported } = useRepoData();
+  return (
+    <RepoDataGate loading={loading} error={error} schemaUnsupported={schemaUnsupported}>
+      {data && <BadmintonAnalyticsContent data={data} />}
+    </RepoDataGate>
+  );
+}
+
+function BadmintonAnalyticsContent({ data }: { data: RepoData }) {
+  const activitiesRaw = data.activities as Activity[];
+  const challengeData = data.challenge_v2 as unknown as ChallengeV2;
+  const syncStatusData = data.sync_status as any;
   const sleepQuest = challengeData.quests.find((q) => q.id === "sleep");
   const sleepStreak = useMemo(
     () => computeSleepStreak(sleepQuest?.completed_dates ?? []),

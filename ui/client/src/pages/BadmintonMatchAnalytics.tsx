@@ -9,9 +9,6 @@
  */
 import { useMemo, useCallback } from "react";
 import { useSearch, useLocation } from "wouter";
-import activitiesData from "@/data/activities.json";
-import challengeDataRaw from "@/data/challenge_v2.json";
-import syncStatusData from "@/data/sync_status.json";
 import type { ChallengeV2 } from "@/lib/challenge";
 import { Activity, getTrainingCategory, computeSleepStreak } from "@/lib/activities";
 import { parseMatch, getAllGames, getRankedGames, type ParsedMatch, type ParsedGame } from "@/lib/matchParser";
@@ -25,9 +22,8 @@ import { OpponentStats } from "@/components/badminton-match-analytics/OpponentSt
 import { ScoreDistribution } from "@/components/badminton-match-analytics/ScoreDistribution";
 import { HrVsWinRate } from "@/components/badminton-match-analytics/HrVsWinRate";
 import { SessionCards } from "@/components/badminton-match-analytics/SessionCards";
-
-const activities = activitiesData as (Activity & { ebadders?: any })[];
-const challengeData = challengeDataRaw as unknown as ChallengeV2;
+import { RepoDataGate } from "@/components/RepoDataGate";
+import { useRepoData, type RepoData } from "@/hooks/useRepoData";
 
 export interface AnalyticsSession {
   activity: Activity & { ebadders?: any };
@@ -57,6 +53,18 @@ const RANKED_CATEGORIES = new Set(["badminton_ranked", "badminton_league"]);
 const ALL_CATEGORIES = new Set(["badminton_ranked", "badminton_league", "badminton_friendly", "badminton_casual"]);
 
 export default function BadmintonMatchAnalytics() {
+  const { data, loading, error, schemaUnsupported } = useRepoData();
+  return (
+    <RepoDataGate loading={loading} error={error} schemaUnsupported={schemaUnsupported}>
+      {data && <BadmintonMatchAnalyticsContent data={data} />}
+    </RepoDataGate>
+  );
+}
+
+function BadmintonMatchAnalyticsContent({ data }: { data: RepoData }) {
+  const activities = data.activities as (Activity & { ebadders?: any })[];
+  const challengeData = data.challenge_v2 as unknown as ChallengeV2;
+  const syncStatusData = data.sync_status as any;
   const search = useSearch();
   const [, setLocation] = useLocation();
 

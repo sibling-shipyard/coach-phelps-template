@@ -6,7 +6,6 @@
 import { useMemo } from "react";
 import { Link } from "wouter";
 import { ArrowLeft, Clock, MapPin, Dumbbell, ChevronRight } from "lucide-react";
-import workoutsData from "@/data/workouts.json";
 import {
   Workout,
   WorkoutsData,
@@ -17,8 +16,8 @@ import {
   countExercises,
   countSets,
 } from "@/lib/workouts";
-
-const data = workoutsData as WorkoutsData;
+import { RepoDataGate } from "@/components/RepoDataGate";
+import { useRepoData, type RepoData } from "@/hooks/useRepoData";
 
 function WorkoutCard({ workout, hasSession }: { workout: Workout; hasSession: boolean }) {
   const config = WORKOUT_TYPE_CONFIG[workout.workout_type];
@@ -98,6 +97,16 @@ function WorkoutCard({ workout, hasSession }: { workout: Workout; hasSession: bo
 }
 
 export default function Workouts() {
+  const { data, loading, error, schemaUnsupported } = useRepoData();
+  return (
+    <RepoDataGate loading={loading} error={error} schemaUnsupported={schemaUnsupported}>
+      {data && <WorkoutsContent repoData={data} />}
+    </RepoDataGate>
+  );
+}
+
+function WorkoutsContent({ repoData }: { repoData: RepoData }) {
+  const data = repoData.workouts as WorkoutsData;
   const today = new Date().toISOString().slice(0, 10);
 
   // Build the display list: for each template, check if there's a session for today
