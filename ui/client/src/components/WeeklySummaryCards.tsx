@@ -16,7 +16,7 @@ import type { WeeklyTargets } from "@/lib/challenge";
 
 interface Props {
   activities: Activity[];
-  weeklyTargets: WeeklyTargets;
+  weeklyTargets?: WeeklyTargets;
   // quests: Quest[]; — re-add when FoundationCard is active (needs foundation quest data)
 }
 
@@ -299,6 +299,10 @@ function SwimCard({ activities, target }: { activities: Activity[]; target: numb
 }
 
 export function WeeklySummaryCards({ activities, weeklyTargets }: Props) {
+  // Not every coaching model uses a weekly-quota system - omit the section entirely
+  // rather than crash on undefined category targets.
+  if (!weeklyTargets) return null;
+
   return (
     <div className="container pt-6">
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-6">

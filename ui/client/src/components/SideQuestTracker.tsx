@@ -65,7 +65,12 @@ function QuestBar({ label, current, target, color }: { label: string; current: n
   );
 }
 
-function MainQuestCard({ activities, challenge, mainQuest }: { activities: Activity[]; challenge: ChallengeMetadata; mainQuest: MainQuest }) {
+function MainQuestCard({ activities, challenge, mainQuest }: { activities: Activity[]; challenge?: ChallengeMetadata; mainQuest: MainQuest }) {
+  // Not every coaching model has a single "the challenge" date range or a
+  // count-target main quest (e.g. a weekly-session-floor system instead) - omit
+  // this card entirely rather than crash on either being absent.
+  if (!challenge || mainQuest.target == null) return null;
+
   const target = mainQuest.target;
   const pattern = mainQuest.count_pattern ? new RegExp(mainQuest.count_pattern, "i") : null;
   const completed = activities.filter((a) => {
@@ -82,7 +87,12 @@ function MainQuestCard({ activities, challenge, mainQuest }: { activities: Activ
   start.setHours(0, 0, 0, 0);
   now.setHours(0, 0, 0, 0);
   const dayNum = Math.max(Math.floor((now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1, 1);
-  const totalDays = challenge.duration_days;
+  const totalDays =
+    challenge.duration_days ??
+    Math.max(
+      Math.round((new Date(challenge.end_date).getTime() - new Date(challenge.start_date).getTime()) / 86400000),
+      1
+    );
 
   // Pace: expected sessions by now
   const expectedByNow = (dayNum / totalDays) * target;

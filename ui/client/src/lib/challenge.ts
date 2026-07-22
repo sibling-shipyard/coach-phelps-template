@@ -6,7 +6,10 @@
 export interface ChallengeMetadata {
   name: string;
   start_date: string;
-  duration_days: number;
+  // Optional - not every repo's build pipeline derives this (it's computable from
+  // start_date/end_date when absent). See coach-phelps-hq/coach-phelps-template's
+  // reconciliation of Akash's season/phase model, which has no single fixed duration.
+  duration_days?: number;
   end_date: string;
 }
 
@@ -14,8 +17,10 @@ export interface MainQuest {
   id: string;
   name: string;
   type: string;
-  target: number;
-  count_from: string;
+  // Optional - some coaching models (e.g. a weekly-session-floor system) have no single
+  // count-target concept. Components must guard on presence rather than assume it's set.
+  target?: number;
+  count_from?: string;
   count_pattern?: string;
   unit_label?: string;
   event_date?: string;
@@ -50,8 +55,12 @@ export interface WeeklyTargets {
 
 export interface ChallengeV2 {
   version: number;
-  challenge: ChallengeMetadata;
-  weekly_targets: WeeklyTargets;
+  // Optional - some repos' coaching model has no single "the challenge" concept
+  // (e.g. a season/phase/block progression instead). Components must guard on its
+  // presence rather than assume it's always there.
+  challenge?: ChallengeMetadata;
+  // Optional - not every coaching model uses a weekly-quota system.
+  weekly_targets?: WeeklyTargets;
   main_quest: MainQuest;
   quests: Quest[];
 }
