@@ -9,6 +9,7 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Onboarding from "./pages/Onboarding";
+import AuthError from "./pages/AuthError";
 import Workouts from "./pages/Workouts";
 import WorkoutTimer from "./pages/workout-timer";
 import RunAnalytics from "./pages/RunAnalytics";
@@ -39,10 +40,15 @@ function Router() {
  */
 function Gate({ children }: { children: ReactNode }) {
   const auth = useAuth();
+  const params = new URLSearchParams(window.location.search);
+  const authError = params.get("auth_error");
+  const switching = params.get("switch_repo") === "1";
 
+  if (authError) return <AuthError type={authError} />;
   if (auth.status === "loading") return null;
   if (auth.status === "unauthenticated") return <Login />;
   if (auth.status === "onboarding") return <Onboarding />;
+  if (switching && auth.status === "authenticated") return <Onboarding switchMode />;
   return <>{children}</>;
 }
 
