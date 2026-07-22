@@ -1,15 +1,16 @@
 # Migration: akash-coach-phelps (Akash)
 
-See `WEBSITE_UNIFICATION_PLAN.md` for the full plan this executes. This doc lives in
-`coach-phelps-template` (the repo the shared site deploys from) and describes what happens in
-Akash's own repo, `akash-suresh/coach-phelps`, to make the shared site work for him.
+See `docs/website-unification-history.md` for the full story of how the shared site came
+together. This doc lives in `coach-phelps-template` (the repo the shared site deploys from) and
+describes what happens in Akash's own repo, `akash-suresh/coach-phelps`, to make the shared
+site work for him.
 
 ## Status
 
 **Done, verified end to end with real data.** Auth (GitHub App install + login) and repo
 resolution work for his account exactly the same as Skanda's — generic, no repo-specific code
 needed (hardened further by `coach-phelps-hq/coach-phelps-template#30`/`#31`/`#33`, see
-`WEBSITE_UNIFICATION_PLAN.md` Section 5's status note). `data/aggregate.json` publishing is
+`docs/website-unification-history.md` for the full story). `data/aggregate.json` publishing is
 built and merged (`akash-suresh/coach-phelps#149`).
 
 His `workflow_dispatch` sync pipeline's Step 1 (Strava) still fails — expected and permanent,
@@ -78,8 +79,9 @@ considered and correctly rejected as unnecessary now that Strava is fully dead f
    manual step.
 
 7. **[Decided] Remove `ui/` from `akash-coach-phelps`, sequenced last.** Still not done, but now
-   unblocked — step 6 is resolved. Sequenced with `WEBSITE_UNIFICATION_PLAN.md` Milestone 4
-   (retiring both standalone deployments), not before.
+   unblocked — step 6 is resolved. Sequenced with retiring both standalone deployments (the
+   last open item from the unification work — see `docs/website-unification-history.md`), not
+   before.
 
 8. **Decommission the Netlify deployment** for `akash-coach-phelps` — same, unblocked, sequenced
    with Milestone 4.

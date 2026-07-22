@@ -18,12 +18,11 @@ time a new feature needs a new scope:
   onboarding idea below (Phase 2, "site writes sync credentials into a new user's repo secrets
   during setup") ever gets built.
 - **Administration** — needed only for the deferred new-user template-generate flow
-  (`WEBSITE_UNIFICATION_PLAN.md` Section 6, `provision-repo.ts`), which needs to create a new
+  (`provision-repo.ts`, described in the "Phase 2" section below), which needs to create a new
   repo on the user's behalf.
 
 Current permissions, for reference: Contents (Read and write) and Actions (Read and write) — see
-`WEBSITE_UNIFICATION_PLAN.md` Section 5 for what each is actually used for and when it was
-added.
+`docs/website-unification-history.md` for what each is used for and why they were added.
 
 **Open questions from the login-flow hardening (PR #33), not yet decided or built:**
 
@@ -62,12 +61,12 @@ mechanism that caused this has no remaining real-world trigger on his side. Not 
 change for a dead code path. The residual risk is a working-practice note for local testing on
 this shared machine, not something either repo's code needs to change.
 
-**Status:** Website unification itself (Skanda + Akash, real shared site) is underway — see
-`WEBSITE_UNIFICATION_PLAN.md` for that executable plan. This doc is the parking lot for
-everything that only matters once there's a friend #3: fork history/background, provisioning
-for brand-new users, page-set configurability, sync-source pluggability, and the IP-boundary
-and funding questions raised while planning unification. Nothing here blocks
-`WEBSITE_UNIFICATION_PLAN.md`'s milestones.
+**Status:** Website unification itself (Skanda + Akash, real shared site) is done — see
+`docs/website-unification-history.md` for the full story of how it happened. This doc is the
+parking lot for everything that only matters once there's a friend #3: fork history/background,
+provisioning for brand-new users, page-set configurability, sync-source pluggability, and the
+IP-boundary and funding questions raised while planning unification. Nothing here blocked the
+unification work itself.
 
 ## Context
 
@@ -245,9 +244,9 @@ conversation itself works (still local Claude Code / Claude Pro, per user, per r
   and paste it into repo settings" step that's the actual CS-knowledge barrier today. This
   is real engineering work (GitHub API repo-secrets endpoint requires libsodium encryption
   client-side) but bounded and well-documented by GitHub.
-- **New-user `ui/` leakage — file, don't build:** the `generate`-from-template endpoint (Section
-  6, branch 3 in `WEBSITE_UNIFICATION_PLAN.md`) copies the *entire* template repo, `ui/` included,
-  into a brand-new user's repo. Once the shared site is live, that `ui/` folder is dead weight —
+- **New-user `ui/` leakage — file, don't build:** the deferred `generate`-from-template endpoint
+  (`provision-repo.ts`, described above) copies the *entire* template repo, `ui/` included, into
+  a brand-new user's repo. Once the shared site is live, that `ui/` folder is dead weight —
   the new user never builds or deploys it, the shared site is the only UI. Doesn't affect Skanda
   or Akash (both onboard via the existing-repo branch, already-populated repos). Needs solving
   before friend #3: either strip `ui/`/`vercel.json`/`ui/api` from the repo right after
@@ -365,10 +364,12 @@ by Skanda and Akash going forward — not one person's repo the other treats as 
 Remaining open questions, to work out as Phase 1/2 get built rather than block on now:
 - ~~Whose analytics pages/components become the "default example"~~ — **Resolved:** all three
   existing pages (Run, Badminton, Badminton Match Analytics) ship to every user for now, no
-  default/optional split. Making page inclusion configurable per user is tracked as a filed
-  issue (see `WEBSITE_UNIFICATION_PLAN.md` Section 12), not designed yet.
-- Once Akash's iOS app is real: does it stay iOS-only, or is Android/other-platform sync a
-  future ask from other friends? (Not urgent — only matters once past friend #2-3. Still open.)
+  default/optional split. Making page inclusion configurable per user is tracked as
+  [issue #13](https://github.com/coach-phelps-hq/coach-phelps-template/issues/13), not designed
+  yet.
+- Akash's iOS app is real and working now, not hypothetical. Does it stay iOS-only, or is
+  Android/other-platform sync a future ask from other friends? (Not urgent — only matters once
+  past friend #2-3. Still open.)
 - ~~For Phase 2's auto-provisioning: does the GitHub OAuth app live under a shared org~~ —
   **Resolved:** a new shared GitHub org, with both Skanda and Akash as owners. See
-  `WEBSITE_UNIFICATION_PLAN.md` Section 5.
+  `docs/website-unification-history.md`.

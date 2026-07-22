@@ -1,8 +1,9 @@
 # Migration: coach-phelps (Skanda)
 
-See `WEBSITE_UNIFICATION_PLAN.md` for the full plan this executes. This doc lives in
-`coach-phelps-template` (the repo the shared site deploys from) and describes what happens in
-Skanda's own repo, `skanda-2003/coach-phelps`, to make the shared site work for him.
+See `docs/website-unification-history.md` for the full story of how the shared site came
+together. This doc lives in `coach-phelps-template` (the repo the shared site deploys from) and
+describes what happens in Skanda's own repo, `skanda-2003/coach-phelps`, to make the shared
+site work for him.
 
 ## Steps
 
@@ -27,12 +28,11 @@ Skanda's own repo, `skanda-2003/coach-phelps`, to make the shared site work for 
    corrects an earlier version of this doc that claimed `sync.yml` stays fully unchanged — it
    doesn't, but the change is small and contained.
 
-5. **Verify sync works through the shared site** — code done
-   (`coach-phelps-hq/coach-phelps-template#35`, Milestone 4): `trigger-sync.ts` now resolves the
-   target repo from the session instead of a static `GITHUB_REPO` env var, still using the
-   shared bot token (no new OAuth scope needed, see `WEBSITE_UNIFICATION_PLAN.md` Section 8.7).
-   **Not yet live-verified** — needs a real logged-in test confirming the sync button actually
-   dispatches `skanda-2003/coach-phelps`'s workflow correctly post-merge.
+5. **Verify sync works through the shared site** — **done, verified live**
+   (`coach-phelps-hq/coach-phelps-template#35`, `#36`): `trigger-sync.ts` resolves the target
+   repo from the session and dispatches using the signed-in user's own token, not a shared bot
+   account — see `docs/website-unification-history.md` for why that design changed partway
+   through. Confirmed against a real GitHub Actions run on `skanda-2003/coach-phelps`.
 
 6. **[Decided] Remove `ui/` from `coach-phelps`, sequenced last.** Confirmed with Akash — once
    the shared site is stable, a personal deployment is redundant. Remove `ui/client`, `ui/api`,
