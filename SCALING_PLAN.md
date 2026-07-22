@@ -31,6 +31,22 @@ their own sync credentials, then installs Coach Phelps on via "Sign up with GitH
   collaboration — being added as a collaborator for code reasons doesn't imply consent to
   share personal training/sleep/coaching data. Not built — flagged only.
 
+**Incident, resolved — Strava credential cross-contamination via a shared local dev machine.**
+While locally testing `akash-suresh/coach-phelps#151`'s Strava-resilience fix, moving Akash's
+repo-local `strava/strava_tokens.json` aside caused `strava_api.py`'s silent home-directory
+fallback (`~/strava_tokens.json`, shared across every repo tested on that one machine) to
+authenticate as Skanda instead. The refreshed credential got auto-committed back into Akash's
+repo (`save_tokens()`'s local auto-commit-and-push behavior) and later, a real iOS sync run
+pulled 17 of Skanda's real Strava activities (with his photos) into Akash's repo. **Fixed:**
+reverted the contaminated commit (verified clean against Akash's last legitimate commit),
+`strava_tokens.json` gitignored and untracked going forward, Skanda's exposed credential
+rotated. **Considered and deliberately rejected:** removing the shared home-directory fallback
+from both repos' `strava_api.py` — would be the structurally "complete" fix, but Akash has fully
+moved to the iOS sync app and isn't going back to Strava (no Premium, no reason to), so the
+mechanism that caused this has no remaining real-world trigger on his side. Not worth the code
+change for a dead code path. The residual risk is a working-practice note for local testing on
+this shared machine, not something either repo's code needs to change.
+
 **Status:** Website unification itself (Skanda + Akash, real shared site) is underway — see
 `WEBSITE_UNIFICATION_PLAN.md` for that executable plan. This doc is the parking lot for
 everything that only matters once there's a friend #3: fork history/background, provisioning

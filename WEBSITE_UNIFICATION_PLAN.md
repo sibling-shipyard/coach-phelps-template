@@ -1,7 +1,11 @@
 # Website Unification
 
-**Status:** Design finalized — all open decisions resolved. Checkpoint branch exists. Execution
-not started (Milestones 1-4).
+**Status:** Milestones -1 through 3 done and verified with real data from both accounts.
+Milestone 4 (multi-tenant `trigger-sync.ts`) is code-complete
+(`coach-phelps-hq/coach-phelps-template#35`), pending a live test with both accounts logged in
+before merge — see the milestones table below. Login/auth also went through a real hardening
+pass beyond the original Milestone 2 scope after two live bugs surfaced (a reinstall loop, a
+cross-account data-resolution bug) — see Section 5's status note.
 **Source of truth for background:** `SCALING_PLAN.md` (repo root) covers the full three-repo
 fork history plus everything only relevant past two users; this doc is the real, executable plan
 for unifying Skanda and Akash onto one shared site now.
@@ -101,6 +105,21 @@ Concrete flow:
 users" admin view both require some persistent store (Vercel KV or similar) — genuinely useful
 past two trusted users, not needed now. Tracked as a separate issue, tackled after Milestones
 1-4 land, not before.
+
+**Status update — real hardening beyond original scope, after two live bugs:** this design
+worked in principle but needed fixes once actually used by a second real account.
+`coach-phelps-hq/coach-phelps-template#28` fixed a reinstall-loop bug (`auth-login.ts` was
+hitting GitHub's install-management endpoint instead of the sign-in endpoint, re-prompting
+install on every visit even for already-installed users). `#30`/`#31` fixed a real cross-account
+data-resolution bug: a collaborator on someone else's already-installed repo could have their
+session resolve to *that* repo's data instead of failing — root cause was `auth-callback.ts`
+trusting `GET /user/installations` results by `app_slug` alone, which returns every installation
+a user has *any visibility into* via repo collaboration, not just ones they installed
+themselves; fixed by also requiring `account.login` match. `#33` then redesigned the login
+screen itself around what these bugs revealed: a single "Sign in" button couldn't cleanly
+express "log in" vs. "install on a new/additional repo," and every error path used to return raw
+JSON to a full-page browser redirect (unstyled, no recovery action) — now two explicit buttons
+("Log in" / "Sign up") and a styled `AuthError` page for every failure case.
 
 ## 6. Provisioning / repo resolution flow
 
@@ -249,8 +268,8 @@ File in whichever repo Section 4 lands on.
 | 0 | File Section 9 issue + analytics-optionality issue (Section 12) | Tech Lead | — | **Done.** Issues filed, no code |
 | 1 | Codebase merge (Section 8) | UI Expert, `ui/` only | — | **Done** (#14). `npm run build` succeeds, all routes reachable, `npm run dev` still works unauthenticated |
 | 2 | Auth + provisioning (Sections 5-6) | Tech Lead / worker with `ui/api/` access | Sequenced after 1 | **Done** (#16, migrated to a GitHub App per #25). Fresh GitHub account can log in, choose new/existing, reach dashboard shell |
-| 3 | Live data fetching (Section 7) | Tech Lead/worker + UI Expert coordination | 1, 2 | **Code done** (#17), verified against real synced data from Skanda's repo (see Section 7's Contents API gotcha). `akash-suresh/coach-phelps` brought to parity (`akash-suresh/coach-phelps#149`) - `quest_history`/`sleep_log` added, `data/aggregate.json` publish step wired in. **Blocked on his account's own data landing**, not on anything in this plan: his `workflow_dispatch` sync pipeline currently fails at Step 1 (Strava API returns `403 Forbidden`) before ever reaching the new steps - separate, pre-existing issue with his Strava auth, not a website-unification bug. The "two real accounts, no bleed" exit criterion needs his real `data/aggregate.json` to actually exist first. |
-| 4 | `trigger-sync.ts` rewrite + retirement of both standalone deployments (Section 8.7-8.8) | Tech Lead/worker | 2, 3 | Not started - the last remaining milestone. Sync button triggers the right user's workflow; data updates without redeploy; Akash's Netlify site and Skanda's separate Vercel deployment both decommissioned |
+| 3 | Live data fetching (Section 7) | Tech Lead/worker + UI Expert coordination | 1, 2 | **Done**, verified against real synced data from both accounts (#17, Contents API gotcha fixed; `akash-suresh/coach-phelps#149`/`#151`/`#153` brought his account to parity and fixed his sync pipeline - his iOS app's push now auto-triggers a full sync with zero manual step, verified live). Dashboard crash on his genuinely different `challenge_v2.json` schema fixed in `coach-phelps-hq/coach-phelps-template#34` - see that PR and `MIGRATION_AKASH.md` for the schema-reconciliation approach (derive, don't force his real data into Skanda's shape). "Two real accounts, no bleed" exit criterion met. |
+| 4 | `trigger-sync.ts` rewrite + retirement of both standalone deployments (Section 8.7-8.8) | Tech Lead/worker | 2, 3 | **Code done** (`coach-phelps-hq/coach-phelps-template#35`) - resolves target repo from session instead of a static env var. **Not yet merged or live-verified** - needs both accounts to actually click Sync post-merge and confirm each dispatches their own repo's workflow (the PAT's cross-repo access was never independently confirmed). Deployment decommissioning (Netlify + Skanda's separate Vercel project) not started, sequenced after that verification. |
 
 Milestones 1 and 2 can run in parallel. Section 4 is resolved (see above), so Milestone 2 has no
 remaining blocker before building `provision-repo.ts`'s template reference.
@@ -274,6 +293,12 @@ These are real gaps but don't block Milestones 1-4. Full detail lives in `SCALIN
 
 - Checkpoint: `git log --oneline -1 checkpoint-before-unification` matches pre-unification `main`.
 - Milestone 1: `npm run build` + `npm run dev` succeed; click every route.
-- Milestone 2: real GitHub login, both onboarding branches, end to end.
-- Milestone 3: two GitHub accounts in two browser sessions, confirm no data bleed.
-- Milestone 4: trigger sync from dashboard, confirm correct workflow fires and data updates.
+- Milestone 2: **done.** Real GitHub login, both onboarding branches, end to end — both accounts.
+- Milestone 3: **done.** Two real GitHub accounts, confirmed no data bleed, both accounts'
+  dashboards render real synced data correctly.
+- Milestone 4: **pending.** #35 merged, then: log in as Skanda, click Sync, confirm
+  `skanda-2003/coach-phelps`'s Actions tab shows a new run. Log in as Akash, click Sync, confirm
+  it's `akash-suresh/coach-phelps`'s Actions tab that gets the run, not Skanda's (the actual bug
+  being fixed) — if this fails with a 403/404, the shared bot token (`GITHUB_PAT`) needs
+  collaborator access granted on Akash's repo, separate from the code change. Only after both
+  confirmed: proceed to decommissioning both standalone deployments.
