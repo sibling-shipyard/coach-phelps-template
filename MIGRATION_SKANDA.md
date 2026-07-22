@@ -27,10 +27,12 @@ Skanda's own repo, `skanda-2003/coach-phelps`, to make the shared site work for 
    corrects an earlier version of this doc that claimed `sync.yml` stays fully unchanged — it
    doesn't, but the change is small and contained.
 
-5. **Verify sync works through the shared site** — trigger a sync from the shared site's UI,
-   confirm `.github/workflows/sync.yml`'s `workflow_dispatch` trigger fires correctly using the
-   shared bot token, now resolving the target repo from session instead of a static env var
-   (issue #18 — no new OAuth scope needed, see `WEBSITE_UNIFICATION_PLAN.md` Section 8.7).
+5. **Verify sync works through the shared site** — code done
+   (`coach-phelps-hq/coach-phelps-template#35`, Milestone 4): `trigger-sync.ts` now resolves the
+   target repo from the session instead of a static `GITHUB_REPO` env var, still using the
+   shared bot token (no new OAuth scope needed, see `WEBSITE_UNIFICATION_PLAN.md` Section 8.7).
+   **Not yet live-verified** — needs a real logged-in test confirming the sync button actually
+   dispatches `skanda-2003/coach-phelps`'s workflow correctly post-merge.
 
 6. **[Decided] Remove `ui/` from `coach-phelps`, sequenced last.** Confirmed with Akash — once
    the shared site is stable, a personal deployment is redundant. Remove `ui/client`, `ui/api`,

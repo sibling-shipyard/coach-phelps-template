@@ -6,15 +6,38 @@ Akash's own repo, `akash-suresh/coach-phelps`, to make the shared site work for 
 
 ## Status
 
-Auth (GitHub App install + login) and repo resolution work for his account exactly the same as
-Skanda's — generic, no repo-specific code needed. `data/aggregate.json` publishing is built and
-merged (`akash-suresh/coach-phelps#149`). **What's not yet true: his real data hasn't actually
-landed on the shared site**, because his `workflow_dispatch` sync pipeline currently fails at
-Step 1 (Strava API returns `403 Forbidden`) before ever reaching the new steps — a separate,
-pre-existing problem with his Strava auth, not a bug in any of this work. His real sync mechanism
-is the iOS/HealthKit app (`ios/`), which commits directly to `training/history/` — that path is
-untouched and unaffected by the Strava failure, but nothing currently re-triggers
-`data/aggregate.json` publishing after an iOS-only commit (see step 6 below).
+**Done, verified end to end with real data.** Auth (GitHub App install + login) and repo
+resolution work for his account exactly the same as Skanda's — generic, no repo-specific code
+needed (hardened further by `coach-phelps-hq/coach-phelps-template#30`/`#31`/`#33`, see
+`WEBSITE_UNIFICATION_PLAN.md` Section 5's status note). `data/aggregate.json` publishing is
+built and merged (`akash-suresh/coach-phelps#149`).
+
+His `workflow_dispatch` sync pipeline's Step 1 (Strava) still fails — expected and permanent,
+he's fully moved to the iOS/HealthKit app and isn't going back to Strava (would require paying
+for Premium for no benefit he'd use). That's no longer a blocker: `akash-suresh/coach-phelps#151`
+made Step 1's failure non-fatal (caught, logged as a warning, steps 4-7 still run against
+whatever's already in `training/history/`) and fixed `sync.yml`'s push trigger to actually watch
+the paths the iOS app commits to (it previously watched none of them — confirmed via
+`GitHubAPIClient.swift`/`HealthKitSyncManager.swift`, not a guess). **Verified against a real
+iOS sync**: his app's push auto-triggered a GitHub Actions run, which regenerated
+`quest_history`/`sleep_log`/`data/aggregate.json` with zero manual steps.
+
+Also fixed: the shared dashboard crashed on his real data on first load, because his
+`challenge_v2.json` uses a genuinely different coaching model (`season`/`phase`/
+`current_block`/`milestones`, not Skanda's single fixed-duration `challenge`) —
+`coach-phelps-hq/coach-phelps-template#34` made every consumer of that shape tolerate a repo
+without it, and `akash-suresh/coach-phelps#153` derives a real `challenge` block from
+`phase.current_block` so his header shows meaningful dates instead of omitting the widget.
+Confirmed working by Akash directly.
+
+**Incident, resolved:** local testing of the `#151` fix accidentally leaked Skanda's own Strava
+credentials into this repo (a shared-machine home-directory fallback in `strava_api.py`, not a
+bug in the actual fix) and one real sync pulled Skanda's activities into this repo. Reverted
+cleanly (`training/history/`, photos, `data/aggregate.json` etc. confirmed to match his last
+legitimate commit exactly), `strava/strava_tokens.json` is now gitignored and untracked, and the
+leaked credential is rotated. No further Strava-related code changes needed — see decision in
+`SCALING_PLAN.md`'s incident note for why the broader "fix both repos' code" option was
+considered and correctly rejected as unnecessary now that Strava is fully dead for this account.
 
 ## Steps
 
@@ -47,20 +70,19 @@ untouched and unaffected by the Strava failure, but nothing currently re-trigger
    `skanda-2003/coach-phelps#92`, adapted to preserve his repo-specific `current_week.json`
    handling. `sync.yml` change folded into his existing single commit step, not a separate one.
 
-6. **Verify sync works through the shared site** — **blocked**, not on anything in this plan.
-   His `workflow_dispatch` pipeline fails at Step 1 (Strava `403 Forbidden`) before reaching the
-   aggregate-publish step added in #149. Separately: even once/if that's fixed, worth noting his
-   iOS app committing directly to `training/history/` doesn't itself trigger `data/aggregate.json`
-   regeneration — only a successful `workflow_dispatch` run does. Whether to fix the Strava
-   token issue, or make Step 1 non-fatal so the rest of the pipeline (including aggregate
-   publishing) runs regardless of Strava's state, is Akash's/Skanda's call — flagged, not
-   decided or executed.
+6. **Verify sync works through the shared site** — **done**, verified against a real iOS sync
+   (`akash-suresh/coach-phelps#151`). Decision made: not fixing the Strava token issue (he's
+   fully off Strava, not going back), instead made Step 1's failure non-fatal so steps 4-7 and
+   the aggregate publish run regardless, and fixed `sync.yml`'s push trigger to actually watch
+   the paths the iOS app writes to. His iOS commits now auto-trigger the full pipeline with zero
+   manual step.
 
-7. **[Decided] Remove `ui/` from `akash-coach-phelps`, sequenced last.** Still not done — no
-   action needed until the shared site is confirmed working end to end **for his account
-   specifically**, which needs step 6 resolved first.
+7. **[Decided] Remove `ui/` from `akash-coach-phelps`, sequenced last.** Still not done, but now
+   unblocked — step 6 is resolved. Sequenced with `WEBSITE_UNIFICATION_PLAN.md` Milestone 4
+   (retiring both standalone deployments), not before.
 
-8. **Decommission the Netlify deployment** for `akash-coach-phelps` — same, waiting on step 6.
+8. **Decommission the Netlify deployment** for `akash-coach-phelps` — same, unblocked, sequenced
+   with Milestone 4.
 
 9. **Leave untouched:** `SOUL.md`, `training/`, `sessions/`, `templates/`, `scripts/`, `strava/`,
    `ios/` (the HealthKit sync app — entirely orthogonal to website unification, keeps writing to
