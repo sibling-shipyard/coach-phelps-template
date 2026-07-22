@@ -1,15 +1,19 @@
-const REPO = process.env.GITHUB_REPO ?? "";
-const WORKFLOW = process.env.GITHUB_WORKFLOW ?? "";
+import { decryptSession, parseCookies, SESSION_COOKIE } from "./_lib/session.js";
+
+// Every account's sync.yml is named identically - each repo's own workflow decides what
+// "sync" actually means for that account (Strava pull, or - since the iOS app already
+// pushes directly and PR #151 - a graceful no-op that just regenerates derived data).
+// This endpoint's only job is dispatching the *right account's* workflow, not knowing or
+// caring what that workflow does internally.
+const WORKFLOW_FILE = "sync.yml";
 const COOLDOWN_MS = 60_000;
 
-let lastDispatchTime = 0;
+// In-memory per-instance cooldown, keyed by repo - prevents one account's rapid clicking
+// from blocking another's, unlike the old single global cooldown timestamp.
+const lastDispatchByRepo = new Map<string, number>();
 
 export default {
   async fetch(req: Request): Promise<Response> {
-    if (!REPO || !WORKFLOW) {
-      return Response.json({ error: "GITHUB_REPO or GITHUB_WORKFLOW not configured" }, { status: 500 });
-    }
-
     if (req.method !== "POST") {
       return Response.json({ error: "Method not allowed" }, { status: 405 });
     }
@@ -19,7 +23,20 @@ export default {
       return Response.json({ error: "GITHUB_PAT not configured" }, { status: 500 });
     }
 
+    const cookies = parseCookies(req);
+    const raw = cookies[SESSION_COOKIE];
+    if (!raw) return Response.json({ error: "Not authenticated" }, { status: 401 });
+
+    const session = await decryptSession(raw);
+    if (!session) return Response.json({ error: "Not authenticated" }, { status: 401 });
+
+    const repo = session.repo_full_name;
+    if (!repo) {
+      return Response.json({ error: "No repo resolved for this account yet" }, { status: 400 });
+    }
+
     const now = Date.now();
+    const lastDispatchTime = lastDispatchByRepo.get(repo) ?? 0;
     if (now - lastDispatchTime < COOLDOWN_MS) {
       const waitSec = Math.ceil((COOLDOWN_MS - (now - lastDispatchTime)) / 1000);
       return Response.json({ ok: false, error: `Sync already triggered. Try again in ${waitSec}s.` }, { status: 429 });
@@ -27,7 +44,7 @@ export default {
 
     try {
       const res = await fetch(
-        `https://api.github.com/repos/${REPO}/actions/workflows/${WORKFLOW}/dispatches`,
+        `https://api.github.com/repos/${repo}/actions/workflows/${WORKFLOW_FILE}/dispatches`,
         {
           method: "POST",
           headers: {
@@ -40,7 +57,7 @@ export default {
       );
 
       if (res.status === 204) {
-        lastDispatchTime = now;
+        lastDispatchByRepo.set(repo, now);
         return Response.json({ ok: true, message: "Sync triggered" });
       }
 
