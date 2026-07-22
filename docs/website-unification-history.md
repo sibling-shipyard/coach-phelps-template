@@ -27,7 +27,8 @@ in a way that could eventually be handed to friends too, not just the two of you
 
 ## The foundation: one org, one repo, "your data stays your repo"
 
-A new GitHub org, `coach-phelps-hq`, was created with both of you as owners — not one person's
+A new GitHub org, originally named `coach-phelps-hq` and later renamed to `sibling-shipyard`
+once you'd decided on a real name, was created with both of you as owners — not one person's
 personal account hosting the other's data. `coach-phelps-template` (already the more
 genericized of the two personal repos) was transferred into it and became the repo the shared
 site deploys from.

@@ -13,7 +13,7 @@ hand-built personal repos. Recommended approach: fork/scrub one of the two exist
 repos into a clean public starter (keep `SOUL.md`, `templates/`, `scripts/`,
 `.github/workflows/`, strip real training data and history) that a new friend forks, fills in
 their own sync credentials, then installs Coach Phelps via "Sign up with GitHub." See
-[issue #32](https://github.com/coach-phelps-hq/coach-phelps-template/issues/32).
+[issue #32](https://github.com/sibling-shipyard/coach-phelps-template/issues/32).
 
 **Auto-provisioning, as a fancier alternative to the manual-fork approach above.** Instead of a
 new friend manually forking a starter repo, the shared site could call GitHub's API on their
@@ -38,7 +38,7 @@ for what each is used for and why they were added.
 
 **Per-user page configurability.** All three analytics pages (Run, Badminton, Badminton Match
 Analytics) ship to every user today, no per-user toggle. Making page inclusion configurable is
-tracked as [issue #13](https://github.com/coach-phelps-hq/coach-phelps-template/issues/13), not
+tracked as [issue #13](https://github.com/sibling-shipyard/coach-phelps-template/issues/13), not
 designed yet.
 
 **Open questions from the login-flow hardening, not yet decided or built:**
@@ -95,22 +95,25 @@ persona/brand to something original, not tied to a real person. The coaching con
 need to change, just the name. Do this rename with plenty of runway — before friends #3+ have
 "Coach Phelps" wired into their muscle memory, not after.
 
-**GitHub org naming — interim decision, not the final brand:** the shared org is named
-`coach-phelps-hq` for now (chosen while still private, easiest available option matching the
-current internal name). GitHub orgs can be renamed later without losing the org's history/
-membership/repos, but doing so means updating: any hardcoded org-name references (OAuth App
-callback URLs, CI secrets, docs), and everyone's local git remotes (old-name → new-name; GitHub's
-redirect for renamed orgs isn't guaranteed to last forever). **Bundle the org rename with the
-public-brand rename above** — one coordinated pass, not two separate scrambles.
+**GitHub org naming — done.** The org is now `sibling-shipyard` (renamed from the interim
+`coach-phelps-hq`), picked specifically because it isn't tied to a real person — sidesteps the
+whole Michael Phelps issue above for the org itself. Confirmed nothing functional broke: the
+GitHub App, its install URLs, and the live site's domain (`coach-phelps-hq.vercel.app` — a
+separate Vercel project name, untouched by the org rename) all kept working through the
+redirect. Updated: local git remotes, and the handful of doc/code-comment references that
+spelled out the old org name.
 
-**Repo naming too — same bundle.** `coach-phelps-template` itself is also named after the
-"Coach Phelps" persona and should be renamed in the same coordinated pass, not separately.
-Renaming a GitHub repo mostly handles itself (GitHub redirects git/issue URLs for a while,
-Vercel's Git integration tracks the repo by internal ID so it survives a rename), but still
-needs manual follow-up: everyone's local git remotes, any hardcoded repo-name references, and
-Vercel's auto-generated `.vercel.app` domain — which is derived from the *project* name at
-creation time, not the repo name, and needs a separate rename if you want it to match. If the
-domain changes, the OAuth App's callback URL needs updating too.
+**Still pending — the repo name and the actual "Coach Phelps" product persona.** The org rename
+happened on its own rather than bundled with these, so they're still open: `coach-phelps-template`
+itself is still named after the persona, and the coaching persona/character (`SOUL.md`, the
+"Coach Phelps" name a user actually sees and talks to) hasn't been renamed at all yet — that's
+the part with the actual legal exposure once this is public, not the org name. Renaming the repo
+mostly handles itself (GitHub redirects git/issue URLs for a while, Vercel's Git integration
+tracks the repo by internal ID so it survives a rename), but still needs manual follow-up:
+local git remotes again, any hardcoded repo-name references, and Vercel's `.vercel.app` domain
+— which is derived from the *project* name at creation time, not the repo name, and needs its
+own separate rename if you want it to match. If the domain changes, the GitHub App's callback
+URL needs updating too.
 
 ## IP Boundary vs. Local Claude Code — Deferred, Genuinely Unresolved
 
