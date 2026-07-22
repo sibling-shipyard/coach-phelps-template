@@ -20,6 +20,10 @@
  *
  * GET                          → list/confirm candidates, auto-select if exactly one.
  * GET ?select=<owner>/<name>   → confirm and persist a specific pick (2+ case).
+ * GET ?switch=1                → re-list every candidate, skipping the cached-pick fast
+ *                                 path and the auto-select-on-one shortcut, so a user who
+ *                                 already resolved a repo can deliberately switch to another
+ *                                 one they own without logging out first.
  */
 import {
   decryptSession,
@@ -74,6 +78,7 @@ export default {
 
     const url = new URL(req.url);
     const selected = url.searchParams.get("select");
+    const switching = url.searchParams.get("switch") === "1";
 
     // Explicit pick from a 2+ candidate list.
     if (selected) {
@@ -93,8 +98,9 @@ export default {
 
     // Re-confirm an already-resolved repo still exists, is accessible, AND is actually
     // owned by this account before trusting it - defense in depth against a session that
-    // resolved incorrectly before this check existed.
-    if (session.repo_full_name) {
+    // resolved incorrectly before this check existed. Skipped in switch mode: the whole
+    // point there is to re-list every option, not short-circuit back to the current pick.
+    if (session.repo_full_name && !switching) {
       const stillOwned = isOwnedBy(session.repo_full_name, session.login);
       const stillOk = stillOwned && (await hasMarkerFile(session.repo_full_name, session.gh_token));
       if (stillOk) {
@@ -125,12 +131,23 @@ export default {
       }
     }
 
-    if (confirmed.length === 1) {
+    // Auto-select on exactly one match - but not in switch mode, where the whole point is
+    // to show the picker even if there's only one other option (or none), so the client can
+    // say so explicitly instead of silently bouncing back to the same repo.
+    if (confirmed.length === 1 && !switching) {
       const newSession = await encryptSession({ ...session, repo_full_name: confirmed[0] });
       return withUpdatedSession({ repo_full_name: confirmed[0] }, newSession);
     }
 
-    // 0 or 2+ - client decides what to render (empty state / picker).
+    // Distinguish "nothing granted to this installation that you own" (fix: install on a
+    // repo via Sign up) from "some repos granted, but none look like a coach-phelps repo"
+    // (fix: finish setting it up) - these need different messaging, not one generic error.
+    if (confirmed.length === 0) {
+      const reason = ownRepos.length === 0 ? "no_owned_repos" : "no_marker_match";
+      return Response.json({ candidates: [], reason });
+    }
+
+    // 2+ - client renders the picker.
     return Response.json({ candidates: confirmed });
   },
 };

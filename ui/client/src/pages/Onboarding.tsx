@@ -4,25 +4,39 @@ import { Button } from "@/components/ui/button";
 interface RepoResult {
   candidates?: string[];
   repo_full_name?: string;
+  reason?: "no_owned_repos" | "no_marker_match";
   error?: string;
 }
 
-export default function Onboarding() {
+const EMPTY_STATE_COPY: Record<string, { heading: string; body: string }> = {
+  no_owned_repos: {
+    heading: "No repo granted yet",
+    body: "You haven't granted Coach Phelps access to any of your own repos. Sign up again and pick one during install.",
+  },
+  no_marker_match: {
+    heading: "Not set up yet",
+    body: "None of the repos you granted access to have a SOUL.md and training/challenge_v2.json. Finish setting one up, then sign in again.",
+  },
+};
+
+export default function Onboarding({ switchMode = false }: { switchMode?: boolean }) {
   const [loading, setLoading] = useState(true);
   const [candidates, setCandidates] = useState<string[]>([]);
+  const [reason, setReason] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selecting, setSelecting] = useState(false);
 
   useEffect(() => {
-    fetch("/api/list-my-repos")
+    fetch(`/api/list-my-repos${switchMode ? "?switch=1" : ""}`)
       .then(async (res) => {
         const data: RepoResult = await res.json();
-        if (data.repo_full_name) {
+        if (data.repo_full_name && !switchMode) {
           window.location.href = "/";
           return;
         }
         if (data.candidates) {
           setCandidates(data.candidates);
+          setReason(data.reason ?? null);
         } else if (data.error) {
           setError(data.error);
         }
@@ -32,7 +46,7 @@ export default function Onboarding() {
         setError("Failed to look up your repos.");
         setLoading(false);
       });
-  }, []);
+  }, [switchMode]);
 
   async function selectRepo(fullName: string) {
     setSelecting(true);
@@ -44,6 +58,8 @@ export default function Onboarding() {
       setSelecting(false);
     }
   }
+
+  const emptyCopy = reason ? EMPTY_STATE_COPY[reason] : null;
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-background px-4">
@@ -58,18 +74,28 @@ export default function Onboarding() {
 
         {!loading && !error && candidates.length === 0 && (
           <>
-            <h2 className="text-xl font-bold uppercase tracking-widest">No repo found</h2>
+            <h2 className="text-xl font-bold uppercase tracking-widest">
+              {switchMode ? "Nothing else to switch to" : emptyCopy?.heading ?? "No repo found"}
+            </h2>
             <p className="text-sm text-muted-foreground">
-              None of the repos you granted access to have a SOUL.md and
-              training/challenge_v2.json. Check the GitHub App's install settings to make
-              sure you selected the right repo, or set one up first and sign in again.
+              {switchMode
+                ? "This is the only coach-phelps repo granted to your account."
+                : emptyCopy?.body ??
+                  "None of the repos you granted access to have a SOUL.md and training/challenge_v2.json."}
             </p>
+            {switchMode && (
+              <Button asChild variant="outline" className="w-full">
+                <a href="/">Back to dashboard</a>
+              </Button>
+            )}
           </>
         )}
 
         {!loading && !error && candidates.length > 0 && (
           <>
-            <h2 className="text-xl font-bold uppercase tracking-widest">Which repo is yours?</h2>
+            <h2 className="text-xl font-bold uppercase tracking-widest">
+              {switchMode ? "Switch to which repo?" : "Which repo is yours?"}
+            </h2>
             <div className="space-y-2">
               {candidates.map((c) => (
                 <Button

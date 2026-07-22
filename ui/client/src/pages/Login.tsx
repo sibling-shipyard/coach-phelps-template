@@ -6,11 +6,16 @@ export default function Login() {
       <div className="border-2 border-foreground p-8 w-full max-w-sm text-center space-y-4">
         <h1 className="text-xl font-bold uppercase tracking-widest">Coach Phelps</h1>
         <p className="text-sm text-muted-foreground">
-          Sign in with GitHub to see your dashboard.
+          Already set up? Log in. First time, or adding another repo? Sign up.
         </p>
-        <Button asChild className="w-full">
-          <a href="/api/auth-login">Sign in with GitHub</a>
-        </Button>
+        <div className="space-y-2">
+          <Button asChild className="w-full">
+            <a href="/api/auth-login">Log in with GitHub</a>
+          </Button>
+          <Button asChild variant="outline" className="w-full">
+            <a href="/api/auth-install">Sign up with GitHub</a>
+          </Button>
+        </div>
       </div>
     </div>
   );

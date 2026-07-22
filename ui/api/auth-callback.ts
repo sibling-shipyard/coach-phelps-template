@@ -12,44 +12,55 @@ const CLIENT_ID = process.env.GITHUB_APP_CLIENT_ID ?? "";
 const CLIENT_SECRET = process.env.GITHUB_APP_CLIENT_SECRET ?? "";
 const APP_SLUG = process.env.GITHUB_APP_SLUG ?? "coach-phelps";
 
+// auth-callback.ts is reached by the browser navigating directly here (GitHub's redirect),
+// not by a fetch() call from React - so error responses can't just be JSON bodies, the user
+// would see literal unstyled JSON text with nothing clickable. Every failure path redirects
+// to the client app instead, where AuthError.tsx renders something with an explanation and a
+// working button. `not_installed` is the important one: it's not a rare misconfiguration,
+// it's the default state for every brand-new user's first visit (see App.tsx/AuthError.tsx).
+function errorRedirect(origin: string, type: string, clearOauthCookie = true): Response {
+  const headers = new Headers();
+  headers.set("Location", `${origin}/?auth_error=${type}`);
+  if (clearOauthCookie) {
+    headers.append("Set-Cookie", clearCookie(OAUTH_STATE_COOKIE));
+  }
+  return new Response(null, { status: 302, headers });
+}
+
 export default {
   async fetch(req: Request): Promise<Response> {
+    const url = new URL(req.url);
+
     if (!CLIENT_ID || !CLIENT_SECRET) {
-      return Response.json({ error: "GitHub App not configured" }, { status: 500 });
+      return errorRedirect(url.origin, "config_error", false);
     }
 
-    const url = new URL(req.url);
     const code = url.searchParams.get("code");
     const state = url.searchParams.get("state");
 
     if (!code || !state) {
-      return Response.json({ error: "Missing code or state" }, { status: 400 });
+      return errorRedirect(url.origin, "missing_params", false);
     }
 
     const cookies = parseCookies(req);
     const tempRaw = cookies[OAUTH_STATE_COOKIE];
     if (!tempRaw) {
-      return Response.json({ error: "Missing OAuth session - try signing in again" }, { status: 400 });
+      return errorRedirect(url.origin, "missing_oauth_session", false);
     }
 
     let tempData: { state: string; codeVerifier: string };
     try {
       tempData = JSON.parse(tempRaw);
     } catch {
-      return Response.json({ error: "Corrupt OAuth session - try signing in again" }, { status: 400 });
+      return errorRedirect(url.origin, "corrupt_oauth_session");
     }
 
     if (tempData.state !== state) {
-      return Response.json({ error: "State mismatch - possible CSRF, try signing in again" }, { status: 400 });
+      return errorRedirect(url.origin, "state_mismatch");
     }
 
     const redirectUri = `${url.origin}/api/auth-callback`;
 
-    // Token exchange endpoint/shape is unchanged from the classic OAuth App flow - GitHub
-    // Apps' user-to-server tokens use the same endpoint, just keyed by the App's client
-    // credentials. PKCE is well-supported here since auth-login.ts now goes through the
-    // direct /login/oauth/authorize entry point (not the install-first path, which had
-    // this unconfirmed).
     const tokenRes = await fetch("https://github.com/login/oauth/access_token", {
       method: "POST",
       headers: { Accept: "application/json", "Content-Type": "application/json" },
@@ -64,7 +75,7 @@ export default {
 
     const tokenBody = await tokenRes.json();
     if (!tokenRes.ok || tokenBody.error || !tokenBody.access_token) {
-      return Response.json({ error: "Token exchange failed", detail: tokenBody }, { status: 400 });
+      return errorRedirect(url.origin, "token_exchange_failed");
     }
 
     const ghToken = tokenBody.access_token as string;
@@ -78,7 +89,7 @@ export default {
     });
 
     if (!userRes.ok) {
-      return Response.json({ error: "Failed to fetch GitHub user" }, { status: 502 });
+      return errorRedirect(url.origin, "user_fetch_failed");
     }
 
     const user = await userRes.json();
@@ -101,28 +112,29 @@ export default {
       },
     });
 
-    let installationId: number | null = null;
-    if (installationsRes.ok) {
-      const { installations } = (await installationsRes.json()) as {
-        installations: Array<{ id: number; app_slug: string; account: { login: string } }>;
-      };
-      const match = installations.find(
-        (i) =>
-          i.app_slug === APP_SLUG &&
-          i.account.login.toLowerCase() === (user.login as string).toLowerCase()
-      );
-      installationId = match?.id ?? null;
+    // A failed lookup is not the same thing as "genuinely no installation" - conflating them
+    // used to mean a transient GitHub API hiccup for an already-installed user looked
+    // identical to a brand-new user who's never installed, sending both down the same path.
+    if (!installationsRes.ok) {
+      return errorRedirect(url.origin, "lookup_failed");
     }
 
+    const { installations } = (await installationsRes.json()) as {
+      installations: Array<{ id: number; app_slug: string; account: { login: string } }>;
+    };
+    const match = installations.find(
+      (i) =>
+        i.app_slug === APP_SLUG &&
+        i.account.login.toLowerCase() === (user.login as string).toLowerCase()
+    );
+    const installationId = match?.id ?? null;
+
     if (!installationId) {
-      const installUrl = `https://github.com/apps/${APP_SLUG}/installations/new`;
-      return Response.json(
-        {
-          error: "You haven't installed Coach Phelps on your own GitHub account yet.",
-          install_url: installUrl,
-        },
-        { status: 400 }
-      );
+      // Not a dead end: not_installed is the expected first-visit state for anyone who's
+      // never installed the App, which is most new friends. AuthError.tsx points them at
+      // "Sign up with GitHub" (auth-install.ts) rather than showing raw JSON with a URL to
+      // copy-paste.
+      return errorRedirect(url.origin, "not_installed");
     }
 
     const session = await encryptSession({
