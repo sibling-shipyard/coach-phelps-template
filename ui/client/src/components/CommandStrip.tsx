@@ -65,9 +65,19 @@ export function CommandStrip({ challengeData, sleepStreak, syncStatus, showBack 
   const [syncing, setSyncing] = useState(false);
   const auth = useAuth();
 
+  // Not every repo's coaching model has a single "the challenge" concept (e.g. a
+  // season/phase/block progression instead) - guard everything derived from it.
   const ch = challengeData.challenge;
-  const currentDay = daysSince(ch.start_date);
-  const pct = Math.round((currentDay / ch.duration_days) * 100);
+  const durationDays =
+    ch?.duration_days ??
+    (ch
+      ? Math.max(
+          Math.round((new Date(ch.end_date).getTime() - new Date(ch.start_date).getTime()) / 86400000),
+          1
+        )
+      : undefined);
+  const currentDay = ch ? daysSince(ch.start_date) : 0;
+  const pct = ch && durationDays ? Math.round((currentDay / durationDays) * 100) : 0;
 
   // Cold shower streak
   const coldQuest = challengeData.quests.find((q) => q.id === "cold_shower");
@@ -82,7 +92,7 @@ export function CommandStrip({ challengeData, sleepStreak, syncStatus, showBack 
     : 0;
 
   // Challenge display name (e.g., "60-Day" from "60-Day Challenge")
-  const challengeShortName = ch.name.replace(/\s*Challenge\s*/i, "").trim() || ch.name;
+  const challengeShortName = ch ? ch.name.replace(/\s*Challenge\s*/i, "").trim() || ch.name : null;
 
   // Dot color for sync status indicator
   const dotColor =
@@ -137,18 +147,22 @@ export function CommandStrip({ challengeData, sleepStreak, syncStatus, showBack 
 
             {/* Challenge + Streaks — center, desktop only */}
             <div className="hidden sm:flex items-center gap-3 flex-1 justify-center">
-              {/* Challenge compact */}
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] uppercase tracking-wider text-background/50">{challengeShortName}</span>
-                <span className="text-[10px] text-background/40 font-mono">
-                  Day {Math.min(currentDay, ch.duration_days)}
-                </span>
-                <span className="text-[10px] text-background/40 font-mono">
-                  {Math.min(pct, 100)}%
-                </span>
-              </div>
+              {/* Challenge compact - only for repos whose coaching model has one */}
+              {ch && durationDays && (
+                <>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] uppercase tracking-wider text-background/50">{challengeShortName}</span>
+                    <span className="text-[10px] text-background/40 font-mono">
+                      Day {Math.min(currentDay, durationDays)}
+                    </span>
+                    <span className="text-[10px] text-background/40 font-mono">
+                      {Math.min(pct, 100)}%
+                    </span>
+                  </div>
 
-              <span className="text-background/20">│</span>
+                  <span className="text-background/20">│</span>
+                </>
+              )}
 
               {/* Sleep streak */}
               <div className="flex items-center gap-1.5">
@@ -281,10 +295,14 @@ export function CommandStrip({ challengeData, sleepStreak, syncStatus, showBack 
             <span className="text-background/30">·</span>
             <span className="uppercase tracking-wider text-background/50">6am</span>
             <span className="font-mono font-bold" style={{ color: "#f59e0b" }}>{wakeupStreak}d</span>
-            <span className="text-background/30">·</span>
-            <span className="font-mono text-background/40">
-              Day {Math.min(currentDay, ch.duration_days)} · {Math.min(pct, 100)}%
-            </span>
+            {ch && durationDays && (
+              <>
+                <span className="text-background/30">·</span>
+                <span className="font-mono text-background/40">
+                  Day {Math.min(currentDay, durationDays)} · {Math.min(pct, 100)}%
+                </span>
+              </>
+            )}
           </div>
         </div>
       </div>

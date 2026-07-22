@@ -14,7 +14,6 @@ import {
   parseLocal,
 } from "@/lib/activities";
 import { CommandStrip } from "@/components/CommandStrip";
-import { MissionBanner } from "@/components/MissionBanner";
 import { SyncStatusBanner } from "@/components/SyncStatusCard";
 import { WeeklySummaryCards } from "@/components/WeeklySummaryCards";
 import { VolumeTrend } from "@/components/VolumeTrend";
@@ -86,13 +85,6 @@ function HomeContent({ data }: { data: RepoData }) {
 
       {/* Sync warning/error banner — only renders when status is partial or error */}
       <SyncStatusBanner syncStatus={syncStatusData} />
-
-      {/* Mission banner — days to event, run progress, pace */}
-      <MissionBanner
-        mainQuest={challengeData.main_quest}
-        activities={activities}
-        challengeStartDate={challengeData.challenge.start_date}
-      />
 
       {/* Divider */}
       <div className="border-b-2 border-foreground" />
