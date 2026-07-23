@@ -120,11 +120,11 @@ Before implementing a widget, check `Widget Gallery.dc.html` for its S/M/L varia
 ## Key Rules
 
 **Data pipeline:**
-- `ui/client/src/data/` is built by the sync pipeline and `build-data.mjs` — **never edit directly**
-- The one exception: `challenge_v2.json` here must mirror `training/challenge_v2.json` — the pipeline handles this, but if you see them diverge, flag it to Tech Lead
+- `build-data.mjs` reads directly from `../training/`, `../templates/`, `../sessions/` at the repo root — there is no intermediate `data/` copy folder
+- `client/src/data/` is built output — never edit it directly
+- To change workout templates, edit `templates/*.json` at the repo root (outside `ui/`) then run `node scripts/build-data.mjs` from inside `ui/`
 
-**Dev server:**
-- Navigate to `ui/` directory first: `cd ui`
+**Dev server (run from `ui/`):**
 - Start: `npm run dev` (automatically runs `predev` → `build-data.mjs` → Vite)
 - Runs at `localhost:3000`
 
@@ -236,6 +236,7 @@ See `.github/CONVENTIONS.md` for the full spec. Summary:
 - Commit prefix: `ui:` for UI-only changes, `feat:` or `fix:` with issue ref for features/bugs
 - Branch naming: `feat/<issue-N>-<brief>` or `fix/<issue-N>-<brief>`
 - Always PR to main, never push directly
+- PRs must reference the issue: `fixes #X`
 
 ## Escalation
 - If you're stuck or unsure about an architectural decision, flag it in your thread — the Tech Lead will triage.
