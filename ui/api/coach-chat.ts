@@ -24,11 +24,13 @@ const SOUL_FILE_PATH = "SOUL.md";
 const STATE_FILE_PATH = "training/state.md";
 const QUEST_LOG_PATH = "training/quest_log.md";
 
-// gemini-2.0-flash was deprecated and shut down June 1 2026 - gemini-2.5-flash is the current
-// stable (non-preview) free-tier default. Free-tier limits aren't published as a fixed table
-// anymore; check aistudio.google.com/rate-limit for this account's actual current numbers
-// before assuming a specific RPM/RPD ceiling.
-const GEMINI_MODEL = "gemini-2.5-flash";
+// Dated model ids keep getting cut early without much notice - gemini-2.0-flash was deprecated,
+// then gemini-2.5-flash also started 404ing for free-tier keys ahead of its own announced
+// shutdown date. Use Google's maintained "-latest" alias instead: it always points at their
+// current recommended flash model, so this doesn't need chasing every time a dated version
+// gets sunset. Check aistudio.google.com/rate-limit for this account's actual current
+// RPM/RPD numbers - free-tier limits aren't published as a fixed table anymore.
+const GEMINI_MODEL = "gemini-flash-latest";
 
 // Only these files carry Coach's write authority (SOUL.md §2, §13) - anything a Gemini
 // response proposes outside this set is dropped, even though the prompt already tells it
