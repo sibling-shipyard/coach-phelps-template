@@ -1,0 +1,16 @@
+# Decisions (ADRs)
+
+One file per durable, hard-to-reverse decision: `NNNN-kebab-title.md`.
+Fields: **Context / Decision / Why / Rejected**, plus an `Area:` tag.
+
+Rules:
+- Add an ADR only when a choice is expensive to reverse, or a future agent might re-argue
+  it. A decision nobody contests doesn't need one.
+- Never rewrite an ADR to change its meaning. Supersede: add a new ADR and set the old
+  one's `Status:` to `Superseded by NNNN`.
+- Keep them short — five fields, a few lines each.
+- Central and tagged (not per-folder) so cross-cutting decisions have a single home.
+- A PR that changes a locked/architectural decision must add or supersede an ADR here
+  (Tech Lead checks this in review).
+
+Seeded from `docs/scaling-plan.md` §4 (locked decisions).
