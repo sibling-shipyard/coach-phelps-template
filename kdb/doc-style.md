@@ -4,7 +4,7 @@ Write design docs that are **short, diagram-led, and in plain English**. Brief b
 If a sentence only repeats what a diagram already shows, cut it.
 
 Any agent writing a design doc, architecture doc, RFC, technical plan, or ADR follows this.
-(Claude agents can also invoke the `design-doc-style` skill — it's the same rules.)
+(This file is the source of truth and is fully self-contained — no external skill required. It mirrors the `design-doc-style` house style where that skill happens to be installed.)
 
 ## Section order
 1. **Context** — what exists now, why we're changing it, permanent non-goals.

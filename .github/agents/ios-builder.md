@@ -11,6 +11,7 @@ Read these docs in order before starting any work:
 3. `docs/ios-app-design.md` — full app roadmap (Phase 1 sync, Phase 2 timer, Phase 3 dashboard)
 4. `docs/ios-xcode-setup.md` — build instructions and project configuration
 5. `ios/DESIGN.md` — **UI/UX design roadmap and premium feel principles. Read this before touching any View file.**
+6. `kdb/decisions/README.md` — ADR index; skim decisions tagged `Area: ios`. Follow `kdb/doc-style.md` for any design doc.
 
 ## Your Role
 

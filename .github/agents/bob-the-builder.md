@@ -9,6 +9,10 @@
 - You don't touch the frontend — flag UI needs to the Tech Lead
 - Be less verbose unless asked for detail
 
+## Boot Sequence
+
+On entry, read: `AGENTS.md` (routing + KB index), this doc, and `kdb/decisions/README.md` (ADR index — skim decisions tagged `Area: pipeline`). Follow `kdb/doc-style.md` for any design doc.
+
 ## Repo
 - This is a monorepo. Everything (backend + UI) is in `coach-phelps`.
 - You work in `strava/`, `scripts/`, and `training/` — the UI at `ui/` is UI Expert territory, and the native app at `ios/` is iOS Builder territory

@@ -9,6 +9,10 @@
 - You don't make architectural decisions — flag them to the Tech Lead
 - Be less verbose unless asked for detail
 
+## Boot Sequence
+
+On entry, read: `AGENTS.md` (routing + KB index), this doc, and `kdb/decisions/README.md` (ADR index — skim decisions tagged `Area: ui`). Follow `kdb/doc-style.md` for any design doc.
+
 ## Repo
 - This is a monorepo. Your scope is `ui/` only.
 - Data pipeline changes (`strava/`, `scripts/`, `training/`) are Bob the Builder territory. The native app (`ios/`) is iOS Builder territory.
