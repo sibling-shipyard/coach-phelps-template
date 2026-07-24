@@ -20,10 +20,12 @@
  */
 import fs from "node:fs";
 import path from "node:path";
+import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, "../..");
+const UI_DIR = path.join(REPO_ROOT, "ui");
 const OUT_DIR = path.join(REPO_ROOT, "ui", "client", "src", "data");
 const SCHEMA_VERSION = 1;
 
@@ -182,6 +184,9 @@ function buildAggregate() {
 // Ensure output dir exists
 fs.mkdirSync(OUT_DIR, { recursive: true });
 
+// Design tokens → CSS custom properties
+spawnSync("node", ["scripts/generate-wi-tokens.mjs"], { cwd: UI_DIR, stdio: "inherit" });
+
 const aggregate = buildAggregate();
 
 // Build-time bundling path (unchanged behavior - Vite bundles these for local/
@@ -193,6 +198,17 @@ if (aggregate.challenge_v2) {
 fs.writeFileSync(path.join(OUT_DIR, "current_week.json"), JSON.stringify(aggregate.current_week, null, 2));
 fs.writeFileSync(path.join(OUT_DIR, "workouts.json"), JSON.stringify(aggregate.workouts, null, 2));
 fs.writeFileSync(path.join(OUT_DIR, "sync_status.json"), JSON.stringify(aggregate.sync_status, null, 2));
+
+// Widget snapshots for cross-platform glance surfaces (iOS Home, WidgetKit)
+const snapshotResult = spawnSync(
+  "npx",
+  ["tsx", "--tsconfig", "tsconfig.json", "scripts/generate-widget-snapshots.ts"],
+  { cwd: UI_DIR, stdio: "inherit" },
+);
+if (snapshotResult.status !== 0) {
+  console.warn("⚠ widget_snapshots generation failed — continuing build");
+}
+
 console.log("✓ Data build complete");
 
 // --aggregate: also write data/aggregate.json at the repo root, for the hosted
