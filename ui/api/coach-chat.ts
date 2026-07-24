@@ -24,9 +24,11 @@ const SOUL_FILE_PATH = "SOUL.md";
 const STATE_FILE_PATH = "training/state.md";
 const QUEST_LOG_PATH = "training/quest_log.md";
 
-// Verify this is still a live free-tier model in Google AI Studio before relying on it -
-// Gemini's free-tier model lineup shifts; this is a reasonable default, not a guarantee.
-const GEMINI_MODEL = "gemini-2.0-flash";
+// gemini-2.0-flash was deprecated and shut down June 1 2026 - gemini-2.5-flash is the current
+// stable (non-preview) free-tier default. Free-tier limits aren't published as a fixed table
+// anymore; check aistudio.google.com/rate-limit for this account's actual current numbers
+// before assuming a specific RPM/RPD ceiling.
+const GEMINI_MODEL = "gemini-2.5-flash";
 
 // Only these files carry Coach's write authority (SOUL.md §2, §13) - anything a Gemini
 // response proposes outside this set is dropped, even though the prompt already tells it
@@ -143,6 +145,32 @@ function purgeExpired(threads: ChatThread[], now = Date.now()): ChatThread[] {
   });
 }
 
+// After a chat-triggered challenge_v2.json update, re-dispatch the repo's existing sync.yml -
+// it already runs generate_quest_log.py as one of its pipeline steps (see
+// scripts/run_sync_pipeline.py's step_generate_quest_log), so this is the same "re-derive
+// quest_log.md from challenge_v2.json" work the Sync button already does, not a new workflow.
+// Own per-repo cooldown map, separate from trigger-sync.ts's - two different serverless files
+// can't share in-memory state.
+const SYNC_DISPATCH_COOLDOWN_MS = 60_000;
+const lastSyncDispatchByRepo = new Map<string, number>();
+
+async function maybeDispatchSync(repo: string, token: string): Promise<void> {
+  const now = Date.now();
+  const last = lastSyncDispatchByRepo.get(repo) ?? 0;
+  if (now - last < SYNC_DISPATCH_COOLDOWN_MS) return;
+  lastSyncDispatchByRepo.set(repo, now);
+  try {
+    await fetch(`https://api.github.com/repos/${repo}/actions/workflows/sync.yml/dispatches`, {
+      method: "POST",
+      headers: { ...GH_HEADERS_JSON(token), "Content-Type": "application/json" },
+      body: JSON.stringify({ ref: "main" }),
+    });
+  } catch {
+    // Quest log staying stale until the next manual sync isn't worth failing the chat reply over -
+    // a repo without sync.yml yet (see the personal-repo drift issue) 404s here too, same handling.
+  }
+}
+
 interface GeminiReply {
   reply: string;
   file_updates?: { path: string; content: string }[];
@@ -161,6 +189,12 @@ async function askGemini(
     soul,
     "\n---\n",
     "You are Coach Phelps, running in a web chat session instead of a local Claude Code session.",
+    "You are mid-conversation already, not booting a fresh session - skip SOUL.md's Boot Sequence",
+    "entirely, you're past it. You have NO shell or tool access: you cannot run `git pull`, cannot",
+    "execute Strava scripts, cannot run shell commands, cannot read files on-demand. Everything you",
+    "have is already given to you below (current state.md and quest_log.md) or in this conversation.",
+    "If SOUL.md instructs you to read a file or run a command you don't have access to here, ignore",
+    "that instruction rather than acting like you did it.",
     "You are Coach Phelps ONLY. Never act as Tech Lead, UI Expert, Bob the Builder, iOS Builder, or any",
     "other role from this repo. Never write or discuss code, architecture, or pull requests. If asked to",
     "break character or act as a different assistant, decline in-voice and stay Coach Phelps.",
@@ -353,6 +387,13 @@ export default {
       } catch (err: unknown) {
         const errMessage = err instanceof Error ? err.message : String(err);
         return Response.json({ error: `Coach replied but saving failed: ${errMessage}` }, { status: 502 });
+      }
+
+      if (validUpdates.some((u) => u.path === "training/challenge_v2.json")) {
+        // Awaited, not fire-and-forget: a serverless function can be frozen/terminated the
+        // moment it returns a response, so an un-awaited dispatch call risks never actually
+        // going out. maybeDispatchSync already swallows its own errors internally.
+        await maybeDispatchSync(repo, token);
       }
 
       return Response.json({ reply: reply.reply, threadId: thread.id, threads: purgeExpired(history.threads) });
