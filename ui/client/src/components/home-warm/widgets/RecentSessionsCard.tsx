@@ -1,0 +1,20 @@
+import { Link } from "wouter";
+import { SessionRow } from "../atoms/SessionRow";
+import type { RecentSessionSnapshot } from "../snapshots";
+
+export function RecentSessionsCard({ sessions }: { sessions: RecentSessionSnapshot[] }) {
+  return (
+    <section className="wi-sessions-card">
+      <div className="wi-card-kicker">
+        <span className="wi-desktop-only">RECENT SESSIONS</span>
+        <span className="wi-mobile-only">RECENT</span>
+        <Link href="/analytics">All activity</Link>
+      </div>
+      <div className="wi-sessions-card__rows">
+        {sessions.slice(0, 3).map((session) => (
+          <SessionRow key={session.id} session={session} />
+        ))}
+      </div>
+    </section>
+  );
+}
