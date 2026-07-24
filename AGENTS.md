@@ -45,6 +45,7 @@ Two layers, both small on purpose:
   the ones tagged for your area on entry; don't re-litigate them. If one is wrong, supersede
   it with a new ADR (see `kdb/README.md`). A PR that changes a locked/architectural
   decision must add or supersede an ADR — Tech Lead checks this in review.
+- **Doc style — `kdb/doc-style.md`.** Any design/architecture doc, RFC, plan, or ADR follows the house style: short, diagram-led, plain English. Claude agents can invoke the `design-doc-style` skill (same rules).
 
 ## Universal Rules
 

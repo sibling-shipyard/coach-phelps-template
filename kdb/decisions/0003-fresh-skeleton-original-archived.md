@@ -1,13 +1,12 @@
-# 0003 — Fresh skeleton repo; original archived
+# 0003 — Start new users from a clean template, archive the original
 
 - **Status:** Accepted · 2026-07-24 · Tech Lead
 - **Area:** cross-cutting
-- **Context:** New instances need a clean, propagatable base. The original hand-built repo
-  has entangled layers and single-tenant assumptions.
-- **Decision:** New instances are stamped from a fresh `coach-engine` skeleton (Soul A +
-  Engine B + skeleton tree + workflows + validators). The original repo is archived at M1,
-  not evolved in place.
-- **Why:** A clean skeleton is the source for provisioning and propagation; carrying the
-  original's baggage forward would leak single-tenant assumptions into every new instance.
-- **Rejected:** Fork/evolve the original → drags entangled layers + history into every user.
-  Keep original live as template → two sources of truth.
+- **Context:** New users need a clean starter template. The original repo was hand-built for
+  one person, with everything tangled together.
+- **Decision:** Build new users from a fresh, clean template repo. Archive the original
+  instead of trying to reshape it.
+- **Why:** A clean template is easy to copy and keep updated for everyone; dragging the old
+  tangled repo forward would push one-person assumptions onto every new user.
+- **Rejected:** Reuse/evolve the original → carries its mess and history to everyone. Keep
+  the original as the template → leaves two competing sources of truth.

@@ -9,6 +9,7 @@ Rules:
 - Never rewrite an ADR to change its meaning. Supersede: add a new ADR and set the old
   one's `Status:` to `Superseded by NNNN`.
 - Keep them short — five fields, a few lines each.
+- Write in plain English — short words, no jargon; readable by someone outside the team.
 - Central and tagged (not per-folder) so cross-cutting decisions have a single home.
 - A PR that changes a locked/architectural decision must add or supersede an ADR here
   (Tech Lead checks this in review).

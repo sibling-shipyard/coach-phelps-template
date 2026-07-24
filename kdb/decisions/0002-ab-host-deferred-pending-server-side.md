@@ -1,13 +1,14 @@
-# 0002 — A+B physical host deferred; BYO-Claude is a stop-gap
+# 0002 — Wait to decide where the coach's "brain" lives
 
 - **Status:** Accepted (deferred decision) · 2026-07-24 · Tech Lead
 - **Area:** cross-cutting
-- **Context:** Soul A + Engine B could live server-side or ship into each user repo
-  (BYO-Claude). Only server-side gives a real IP boundary, but its value depends on whether
-  Gemini / metered-Claude coaching proves worth it.
-- **Decision:** Do not fix the A+B host yet. Ship BYO-Claude as an explicit stop-gap; make
-  the call at M3 from M2 feedback.
-- **Why:** Local BYO-Claude and "hide the engine" are mutually exclusive; committing now
-  would pre-empt a decision that needs real usage data.
-- **Rejected:** Commit server-only now → premature, unproven cost/benefit. Commit BYO-only →
-  forecloses the IP boundary.
+- **Context:** The coach's brain — its personality and rules — could live on our server, or
+  be shipped into each user's repo and run on their own machine. Running it on our server is
+  the only way to keep the brain private, but it's more work and we're not sure it's worth it
+  yet.
+- **Decision:** Don't decide yet. For now, ship the brain into each user's repo (they run it
+  with their own Claude). Make the real call later, at milestone M3, once we've seen how the
+  server version performs.
+- **Why:** Committing now would lock in a choice we don't yet have enough information to make.
+- **Rejected:** Go server-only now → too early, unproven. Commit to the ship-into-repo way
+  forever → gives up the chance to keep the brain private later.
